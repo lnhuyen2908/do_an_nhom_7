@@ -1,0 +1,38 @@
+@model List<CourseLecture>
+@{
+    ViewData["Title"] = "Bài giảng";
+    var courses = ViewBag.Courses as List<Course> ?? new List<Course>();
+    var teachers = ViewBag.Teachers as List<Teacher> ?? new List<Teacher>();
+}
+
+<div class="page-head">
+    <div><p class="eyebrow">Học viên</p><h1>Bài giảng của tôi</h1></div>
+    <div class="admin-tabs"><a asp-action="TongQuan">Khóa của tôi</a><a asp-action="KhoaHocDaLuu">Khóa đã lưu</a><a asp-action="LichHoc">Lịch học</a></div>
+</div>
+
+<div class="table-card">
+    @if (!Model.Any())
+    {
+        <p class="text-muted mb-0">Chưa có bài giảng nào cho các khóa học đã được duyệt của bạn.</p>
+    }
+    else
+    {
+        <table class="table align-middle">
+            <thead><tr><th>Tiêu đề</th><th>Khóa học</th><th>Giáo viên</th><th>File</th><th>Ngày đăng</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                var course = courses.FirstOrDefault(x => x.Id == item.CourseId);
+                var teacher = teachers.FirstOrDefault(x => x.Id == item.TeacherId);
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@course?.Name</td>
+                    <td>@teacher?.FullName</td>
+                    <td><a asp-controller="GiaoVien" asp-action="TaiXuongBaiGiang" asp-route-id="@item.Id">@item.FileName</a></td>
+                    <td>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

@@ -1,0 +1,134 @@
+@model Course
+@{
+    ViewData["Title"] = Model.Name;
+    var currentUser = ViewBag.CurrentUser as UserAccount;
+    var classes = ViewBag.Classes as List<CourseClass> ?? new List<CourseClass>();
+    var teachers = ViewBag.Teachers as List<Teacher> ?? new List<Teacher>();
+    var classSeats = ViewBag.ClassSeats as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var isSaved = ViewBag.IsSaved as bool? ?? false;
+    var isIelts = Model.Name.Contains("IELTS", StringComparison.OrdinalIgnoreCase) || Model.Level.Contains("B1", StringComparison.OrdinalIgnoreCase);
+    var isToeic = Model.Name.Contains("TOEIC", StringComparison.OrdinalIgnoreCase) || Model.Level.Contains("TOEIC", StringComparison.OrdinalIgnoreCase);
+    var isCommunication = Model.Name.Contains("Giao tiếp", StringComparison.OrdinalIgnoreCase) || Model.Level.Contains("A2", StringComparison.OrdinalIgnoreCase);
+    var goals = isIelts
+        ? new[] { "Nắm vững cấu trúc bài thi IELTS Foundation.", "Phát triển từ vựng học thuật và ngữ pháp nền tảng.", "Luyện chiến lược làm bài Listening, Reading, Writing, Speaking.", "Đạt nền tảng đầu ra tương đương 4.0 - 5.0 IELTS." }
+        : isToeic
+            ? new[] { "Nắm cấu trúc TOEIC Listening và Reading.", "Củng cố ngữ pháp trọng tâm thường gặp.", "Tăng tốc độ đọc hiểu và nghe bắt ý chính.", "Hướng tới mục tiêu TOEIC 450+." }
+            : isCommunication
+                ? new[] { "Tự tin giao tiếp trong tình huống hằng ngày.", "Cải thiện phát âm, ngữ điệu và phản xạ nghe nói.", "Mở rộng từ vựng theo chủ đề công việc, học tập, du lịch.", "Xây dựng thói quen nói tiếng Anh mỗi buổi học." }
+                : new[] { "Xây dựng nền tảng phát âm, từ vựng và ngữ pháp cơ bản.", "Hình thành khả năng nghe, nói, đọc, viết ở mức cơ bản.", "Tự tin sử dụng mẫu câu quen thuộc trong giao tiếp.", "Sẵn sàng học tiếp các khóa cao hơn." };
+    var modules = isIelts
+        ? new[] { "Tuần 1-2: Từ vựng học thuật, ngữ pháp nền và phát âm.", "Tuần 3-4: IELTS Listening - nghe ý chính, nghe chi tiết.", "Tuần 5-6: IELTS Reading - scanning, skimming, xử lý câu hỏi.", "Tuần 7-9: IELTS Writing Task 1/Task 2 nền tảng.", "Tuần 10-11: IELTS Speaking theo chủ đề và phản xạ trả lời.", "Tuần 12: Mock test, nhận xét cá nhân và lộ trình tiếp theo." }
+        : isToeic
+            ? new[] { "Tuần 1-2: Phát âm, từ vựng công sở và ngữ pháp căn bản.", "Tuần 3-4: Listening Part 1-2, nhận diện tranh và hỏi đáp.", "Tuần 5-6: Listening Part 3-4, hội thoại và bài nói ngắn.", "Tuần 7-8: Reading Part 5-6, ngữ pháp và điền từ.", "Tuần 9: Reading Part 7, đọc hiểu nhanh.", "Tuần 10: Đề tổng hợp và chữa lỗi." }
+            : isCommunication
+                ? new[] { "Tuần 1-2: Phát âm, chào hỏi, giới thiệu bản thân.", "Tuần 3-4: Giao tiếp trong lớp học, công việc và cuộc sống.", "Tuần 5-6: Đặt câu hỏi, hỏi đường, mua sắm, nhà hàng.", "Tuần 7-8: Thảo luận nhóm và trình bày ngắn.", "Tuần 9: Tình huống thực hành với giáo viên.", "Tuần 10: Đánh giá đầu ra và gợi ý lộ trình tiếp theo." }
+                : new[] { "Tuần 1: Bảng chữ cái, âm cơ bản và từ vựng thông dụng.", "Tuần 2-3: Thì hiện tại đơn, câu khẳng định, phủ định, nghi vấn.", "Tuần 4-5: Từ vựng gia đình, trường học, công việc, thời gian.", "Tuần 6: Nghe nói theo hội thoại ngắn.", "Tuần 7: Đọc viết câu và đoạn văn ngắn.", "Tuần 8: Kiểm tra cuối khóa và tư vấn lộ trình." };
+}
+
+<div class="course-detail-hero">
+    <section class="detail-main">
+        <img class="course-detail-image" src="@EnglishCenterStore.CourseImage(Model)" alt="@Model.Name" />
+        <div class="course-detail-body">
+            <span class="badge text-bg-primary">@Model.Code - @Model.Level</span>
+            <h1>@Model.Name</h1>
+            <p>@Model.Description</p>
+            <div class="course-info-grid">
+                <div><span>Trình độ</span><strong>@Model.Level</strong></div>
+                <div><span>Thời lượng</span><strong>@Model.Duration</strong></div>
+                <div><span>Học phí</span><strong>@Model.Tuition.ToString("N0") VND</strong></div>
+            </div>
+            @if (currentUser?.Role == "Student")
+            {
+                <div class="action-strip">
+                    <form asp-action="DangKyKhoaHoc" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="courseId" value="@Model.Id" />
+                        <button class="btn btn-primary" type="submit">Đăng ký và đến thanh toán</button>
+                    </form>
+                    <form asp-action="LuuKhoaHoc" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="courseId" value="@Model.Id" />
+                        <button class="btn btn-outline-primary" type="submit">@(isSaved ? "Đã lưu" : "Lưu khóa học")</button>
+                    </form>
+                    <a class="btn btn-outline-secondary" asp-action="DanhSach">Quay lại</a>
+                </div>
+            }
+            else if (currentUser == null)
+            {
+                <div class="action-strip">
+                    <a class="btn btn-primary" asp-controller="TaiKhoan" asp-action="DangNhap">Đăng nhập để đăng ký</a>
+                    <a class="btn btn-outline-primary" asp-controller="TaiKhoan" asp-action="DangKy">Tạo tài khoản học viên</a>
+                    <a class="btn btn-outline-secondary" asp-action="DanhSach">Quay lại</a>
+                </div>
+            }
+            else
+            {
+                <div class="action-strip">
+                    <span class="badge text-bg-light">Chỉ tài khoản học viên mới đăng ký khóa học</span>
+                    <a class="btn btn-outline-secondary" asp-action="DanhSach">Quay lại</a>
+                </div>
+            }
+        </div>
+    </section>
+    <aside class="side-panel class-panel">
+        <h2>Lớp đang mở</h2>
+        @if (!classes.Any())
+        {
+            <p class="text-muted">Hiện chưa có lớp đang mở. Vui lòng đăng ký để được tư vấn lịch học phù hợp.</p>
+        }
+        @foreach (var item in classes)
+        {
+            var teacher = teachers.FirstOrDefault(x => x.Id == item.TeacherId);
+            var usedSeats = classSeats.GetValueOrDefault(item.Id);
+            var remainingSeats = Math.Max(0, item.Capacity - usedSeats);
+            <div class="mini-row">
+                <strong>@item.Code - @item.Room</strong>
+                <span>@item.StudyTime</span>
+                <span>GV: @teacher?.FullName</span>
+                <span>Bắt đầu: @item.StartDate.ToString("dd/MM/yyyy")</span>
+                <span>Còn @remainingSeats/@item.Capacity chỗ</span>
+            </div>
+        }
+    </aside>
+</div>
+
+<div class="course-detail-content">
+    <section class="course-section">
+        <div class="section-kicker">Mục tiêu khóa học</div>
+        <h2>Sau khóa học bạn có thể đạt được gì?</h2>
+        <div class="goal-grid">
+            @foreach (var goal in goals)
+            {
+                <div class="goal-card"><span></span><p>@goal</p></div>
+            }
+        </div>
+    </section>
+
+    <section class="course-section">
+        <div class="section-kicker">Thông tin khóa học</div>
+        <h2>Thông tin cần nắm trước khi đăng ký</h2>
+        <div class="info-list">
+            <div><strong>Đối tượng phù hợp</strong><span>Học viên muốn học theo lộ trình rõ ràng, có giáo viên theo sát và có bài đánh giá đầu ra.</span></div>
+            <div><strong>Hình thức học</strong><span>Học trực tiếp tại trung tâm, kết hợp bài tập và tài liệu tự học sau mỗi buổi.</span></div>
+            <div><strong>Quy trình học</strong><span>Kiểm tra đầu vào, xếp lớp, học theo chủ đề, đánh giá giữa khóa và cuối khóa.</span></div>
+            <div><strong>Kết quả đầu ra</strong><span>Học viên nhận nhận xét, điểm danh, điểm đánh giá và gợi ý lộ trình tiếp theo.</span></div>
+        </div>
+    </section>
+
+    <section class="course-section program-section">
+        <div class="section-kicker">Chương trình học</div>
+        <h2>Lộ trình học theo từng giai đoạn</h2>
+        <div class="timeline">
+            @for (var i = 0; i < modules.Length; i++)
+            {
+                <div class="timeline-item">
+                    <span>@(i + 1)</span>
+                    <p>@modules[i]</p>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+
+

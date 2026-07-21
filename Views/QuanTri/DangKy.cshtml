@@ -1,0 +1,49 @@
+@model List<Enrollment>
+@{
+    ViewData["Title"] = "Quản lý đăng ký";
+    var students = ViewBag.Students as List<Student> ?? new List<Student>();
+    var courses = ViewBag.Courses as List<Course> ?? new List<Course>();
+    var classes = ViewBag.Classes as List<CourseClass> ?? new List<CourseClass>();
+    var classSeats = ViewBag.ClassSeats as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var currentUser = ViewBag.CurrentUser as UserAccount;
+    var isAdmin = currentUser?.Role == "Admin";
+}
+<div class="page-head">
+    <div><p class="eyebrow">@(isAdmin ? "Admin" : "Nhân viên đào tạo")</p><h1>Duyệt đăng ký khóa học</h1></div>
+    <div class="admin-tabs">
+        <a asp-action="TongQuan">Tổng quan</a>
+        @if (isAdmin)
+        {
+            <a asp-action="KhoaHoc">Khóa học</a><a asp-action="GiaoVien">Giáo viên</a><a asp-action="TaiKhoan">Tài khoản</a>
+        }
+        else
+        {
+            <a asp-action="HocPhi">Học phí</a><a asp-action="LichKhaiGiang">Lớp học</a><a asp-action="HocVien">Học viên</a>
+        }
+    </div>
+</div>
+<div class="table-card"><table class="table align-middle"><thead><tr><th>Học viên</th><th>Khóa học</th><th>Ngày đăng ký</th><th>Trạng thái</th><th>Gán lớp</th><th></th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+    var student = students.FirstOrDefault(x => x.Id == item.StudentId);
+    var course = courses.FirstOrDefault(x => x.Id == item.CourseId);
+    <tr>
+        <td>@student?.FullName</td>
+        <td>@course?.Name</td>
+        <td>@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
+        <td><span class="badge text-bg-secondary">@EnglishCenterStore.StatusText(item.Status)</span></td>
+        <td colspan="2">
+            <form class="row g-2" asp-action="CapNhatDangKy" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@item.Id" />
+                <div class="col-md-4"><select class="form-select form-select-sm" name="status"><option value="ChoDuyet" selected="@(item.Status == "ChoDuyet")">Chờ duyệt</option><option value="DaDuyet" selected="@(item.Status == "DaDuyet")">Đã duyệt</option><option value="DaHuy" selected="@(item.Status == "DaHuy")">Đã hủy</option></select></div>
+                <div class="col-md-5"><select class="form-select form-select-sm" name="classId"><option value="">Chọn lớp</option>@foreach (var c in classes.Where(x => x.CourseId == item.CourseId)){ var usedSeats = classSeats.GetValueOrDefault(c.Id); var remainingSeats = Math.Max(0, c.Capacity - usedSeats); <option value="@c.Id" selected="@(item.ClassId == c.Id)">@c.Code - còn @remainingSeats/@c.Capacity chỗ - @c.StudyTime</option>}</select></div>
+                <div class="col-md-3"><button class="btn btn-sm btn-primary w-100">Cập nhật</button></div>
+            </form>
+        </td>
+    </tr>
+}
+</tbody></table></div>
+
+
+

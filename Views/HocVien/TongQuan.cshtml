@@ -1,0 +1,39 @@
+@model List<Enrollment>
+@{
+    ViewData["Title"] = "Khóa của tôi";
+    var courses = ViewBag.Courses as List<Course> ?? new List<Course>();
+    var classes = ViewBag.Classes as List<CourseClass> ?? new List<CourseClass>();
+    var payments = ViewBag.Payments as List<Payment> ?? new List<Payment>();
+}
+<div class="page-head"><div><p class="eyebrow">Học viên</p><h1>Khóa học của tôi</h1></div><div class="admin-tabs"><a asp-action="LichHoc">Lịch học</a><a asp-action="DiemSo">Điểm</a><a asp-action="HocPhi">Thanh toán</a><a asp-action="HoSo">Hồ sơ</a></div></div>
+<div class="course-grid">
+@foreach (var item in Model)
+{
+    var course = courses.FirstOrDefault(x => x.Id == item.CourseId);
+    var courseClass = item.ClassId.HasValue ? classes.FirstOrDefault(x => x.Id == item.ClassId.Value) : null;
+    var payment = payments.FirstOrDefault(x => x.EnrollmentId == item.Id);
+    <article class="course-card">
+        @if (course != null)
+        {
+            <img class="course-card-image" src="@EnglishCenterStore.CourseImage(course)" alt="@course.Name" loading="lazy" />
+        }
+        <div class="course-card-body">
+            <span class="badge text-bg-light">@EnglishCenterStore.StatusText(item.Status)</span>
+            <h3>@course?.Name</h3>
+            <p>@(courseClass == null ? "Đang chờ admin xếp lớp" : courseClass.StudyTime + " - " + courseClass.Room)</p>
+            <div class="course-meta"><span>@course?.Level</span><strong>@EnglishCenterStore.StatusText(payment?.Status ?? "ChuaDong")</strong></div>
+            @if (payment != null && payment.Status != "DaDong")
+            {
+                <a class="btn btn-primary btn-sm" asp-action="ThanhToan" asp-route-id="@payment.Id">Thanh toán</a>
+            }
+            else
+            {
+                <span class="badge text-bg-success align-self-start">Đã hoàn tất</span>
+            }
+        </div>
+    </article>
+}
+</div>
+
+
+

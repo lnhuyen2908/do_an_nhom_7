@@ -1,0 +1,97 @@
+@model Payment
+@{
+    ViewData["Title"] = "Thanh toán";
+    var course = ViewBag.Course as Course;
+    var remaining = Model.Amount - Model.PaidAmount;
+    var paidPercent = Model.Amount <= 0 ? 0 : Math.Min(100, Math.Round(Model.PaidAmount / Model.Amount * 100, 0));
+    var transferContent = $"EC{Model.Id:0000} {course?.Code}";
+    var transactions = ViewBag.PaymentTransactions as List<PaymentTransaction> ?? new List<PaymentTransaction>();
+}
+
+<div class="checkout-layout">
+    <section class="detail-main checkout-panel">
+        <div class="checkout-title">
+            <div>
+                <p class="eyebrow">Thanh toán học phí</p>
+                <h1>@course?.Name</h1>
+                <p>Giao dịch sẽ được cập nhật vào học phí và lưu trong lịch sử thanh toán.</p>
+            </div>
+            <span class="payment-status @(remaining <= 0 ? "status-paid" : "status-due")">
+                @(remaining <= 0 ? "Đã thanh toán" : "Cần thanh toán")
+            </span>
+        </div>
+        <div class="payment-progress large">
+            <div class="payment-progress-bar" style="width: @paidPercent%"></div>
+        </div>
+        <div class="checkout-metrics">
+            <div><span>Học phí</span><strong>@Model.Amount.ToString("N0") VND</strong></div>
+            <div><span>Đã đóng</span><strong>@Model.PaidAmount.ToString("N0") VND</strong></div>
+        <div><span>Còn lại</span><strong>@remaining.ToString("N0") VND</strong></div>
+        </div>
+    </section>
+    <form class="form-card checkout-card" asp-action="XacNhanThanhToan" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div class="checkout-card-head">
+        <span>Hóa đơn #@Model.Id</span>
+            <strong>@remaining.ToString("N0") VND</strong>
+        </div>
+        <label class="form-label">Số tiền thanh toán</label>
+        <input class="form-control form-control-lg money-input" name="paidAmount" type="number" min="1" max="@remaining.ToString("0")" value="@remaining.ToString("0")" required disabled="@(remaining <= 0)" />
+        <div class="payment-methods">
+            <label class="method-option">
+                <input type="radio" name="paymentMethod" value="Cash" checked />
+                <span>
+                    <strong>Tiền mặt</strong>
+                    <small>Đóng học phí tại trung tâm</small>
+                </span>
+            </label>
+            <label class="method-option">
+                <input type="radio" name="paymentMethod" value="Transfer" />
+                <span>
+                    <strong>Chuyển khoản</strong>
+                    <small>Chuyển khoản theo mã hóa đơn</small>
+                </span>
+            </label>
+        </div>
+        <div class="transfer-panel" data-transfer-panel hidden>
+            <div class="qr-card" aria-label="Mã QR chuyển khoản mẫu">
+                <div class="qr-pattern"></div>
+            </div>
+            <div class="transfer-info">
+                <span>Thông tin chuyển khoản</span>
+                <strong>Trung tâm Tiếng Anh</strong>
+                <p>Ngân hàng: Vietcombank</p>
+                <p>Số tài khoản: <b>0123 456 789</b></p>
+                <p>Nội dung: <b>@transferContent</b></p>
+            </div>
+        </div>
+        <button class="btn btn-primary w-100 mt-3" type="submit" disabled="@(remaining <= 0)">Xác nhận thanh toán</button>
+        <a class="btn btn-link w-100" asp-action="HocPhi">Xem học phí</a>
+    </form>
+</div>
+
+@if (transactions.Any())
+{
+    <div class="table-card mt-4">
+        <h2>Lịch sử của hóa đơn #@Model.Id</h2>
+        <table class="table align-middle">
+            <thead><tr><th>Thời gian</th><th>Số tiền</th><th>Phương thức</th><th>Người ghi nhận</th><th>Nội dung</th></tr></thead>
+            <tbody>
+            @foreach (var transaction in transactions)
+            {
+                <tr>
+                    <td>@transaction.PaidAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="@(transaction.Amount < 0 ? "text-danger" : "text-success")">@transaction.Amount.ToString("N0") VND</td>
+                    <td>@EnglishCenterStore.PaymentMethodText(transaction.PaymentMethod)</td>
+                    <td>@transaction.RecordedBy</td>
+                    <td>@transaction.Note</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+
+

@@ -1,0 +1,110 @@
+@model List<Payment>
+@{
+    ViewData["Title"] = "Học phí";
+    var enrollments = ViewBag.Enrollments as List<Enrollment> ?? new List<Enrollment>();
+    var courses = ViewBag.Courses as List<Course> ?? new List<Course>();
+    var transactions = ViewBag.PaymentTransactions as List<PaymentTransaction> ?? new List<PaymentTransaction>();
+    var totalAmount = Model.Sum(x => x.Amount);
+    var totalPaid = Model.Sum(x => x.PaidAmount);
+    var totalRemaining = totalAmount - totalPaid;
+}
+<div class="page-head payment-hero">
+    <div>
+        <p class="eyebrow">Học viên</p>
+        <h1>Thanh toán học phí</h1>
+        <p>Theo dõi học phí, số tiền đã đóng và các khoản còn lại của từng khóa học.</p>
+    </div>
+    <div class="admin-tabs"><a asp-action="TongQuan">Khóa của tôi</a><a asp-action="HoSo">Hồ sơ</a></div>
+</div>
+
+<div class="table-card mt-4">
+    <h2>Lịch sử thanh toán</h2>
+    @if (!transactions.Any())
+    {
+        <p class="text-muted mb-0">Chưa có giao dịch thanh toán nào.</p>
+    }
+    else
+    {
+        <table class="table align-middle">
+            <thead><tr><th>Thời gian</th><th>Khóa học</th><th>Số tiền</th><th>Phương thức</th><th>Nội dung</th></tr></thead>
+            <tbody>
+            @foreach (var transaction in transactions)
+            {
+                var payment = Model.FirstOrDefault(x => x.Id == transaction.PaymentId);
+                var enrollment = payment == null ? null : enrollments.FirstOrDefault(x => x.Id == payment.EnrollmentId);
+                var course = enrollment == null ? null : courses.FirstOrDefault(x => x.Id == enrollment.CourseId);
+                <tr>
+                    <td>@transaction.PaidAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@course?.Name</td>
+                    <td class="@(transaction.Amount < 0 ? "text-danger" : "text-success")">@transaction.Amount.ToString("N0") VND</td>
+                    <td>@EnglishCenterStore.PaymentMethodText(transaction.PaymentMethod)</td>
+                    <td>@transaction.Note</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="payment-summary">
+    <div class="summary-card">
+        <span>Tổng học phí</span>
+        <strong>@totalAmount.ToString("N0") VND</strong>
+    </div>
+    <div class="summary-card paid">
+        <span>Đã thanh toán</span>
+        <strong>@totalPaid.ToString("N0") VND</strong>
+    </div>
+    <div class="summary-card due">
+        <span>Còn lại</span>
+        <strong>@totalRemaining.ToString("N0") VND</strong>
+    </div>
+</div>
+
+<div class="payment-list">
+@foreach (var item in Model)
+{
+    var enrollment = enrollments.FirstOrDefault(x => x.Id == item.EnrollmentId);
+    var course = enrollment == null ? null : courses.FirstOrDefault(x => x.Id == enrollment.CourseId);
+    var remaining = item.Amount - item.PaidAmount;
+    var percent = item.Amount <= 0 ? 0 : Math.Min(100, Math.Round(item.PaidAmount / item.Amount * 100, 0));
+    var statusClass = item.Status == "DaDong" ? "status-paid" : item.Status == "DongMotPhan" ? "status-partial" : "status-due";
+    <section class="payment-item">
+        <div class="payment-main">
+            <div>
+                <span class="course-code">Hóa đơn #@item.Id</span>
+                <h2>@course?.Name</h2>
+            </div>
+            <span class="payment-status @statusClass">@EnglishCenterStore.StatusText(item.Status)</span>
+        </div>
+        <div class="payment-note">
+            Phương thức gần nhất: <strong>@EnglishCenterStore.PaymentMethodText(item.PaymentMethod)</strong>
+            @if (item.PaidDate.HasValue)
+            {
+                <span> | Ngày ghi nhận: @item.PaidDate.Value.ToString("dd/MM/yyyy")</span>
+            }
+        </div>
+        <div class="payment-progress">
+            <div class="payment-progress-bar" style="width: @percent%"></div>
+        </div>
+        <div class="payment-metrics">
+            <div><span>Phải đóng</span><strong>@item.Amount.ToString("N0") VND</strong></div>
+            <div><span>Đã đóng</span><strong>@item.PaidAmount.ToString("N0") VND</strong></div>
+            <div><span>Còn lại</span><strong>@remaining.ToString("N0") VND</strong></div>
+        </div>
+        <div class="payment-actions">
+            @if (item.Status != "DaDong")
+            {
+                <a class="btn btn-primary" asp-action="ThanhToan" asp-route-id="@item.Id">Thanh toán ngay</a>
+            }
+            else
+            {
+                <span class="payment-done">Đã hoàn tất</span>
+            }
+        </div>
+    </section>
+}
+</div>
+
+
+

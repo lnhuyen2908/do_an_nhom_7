@@ -1,0 +1,37 @@
+@model Student
+@{
+    ViewData["Title"] = "Hồ sơ học viên";
+    var user = ViewBag.User as UserAccount;
+}
+
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Học viên</p>
+        <h1>Thông tin cá nhân</h1>
+    </div>
+    <div class="admin-tabs"><a asp-action="TongQuan">Khóa của tôi</a><a asp-action="HocPhi">Thanh toán</a></div>
+</div>
+
+<div class="profile-layout">
+    <aside class="profile-summary">
+        <div class="avatar">@Model.FullName.Substring(0, 1).ToUpperInvariant()</div>
+        <h2>@Model.FullName</h2>
+        <span>@Model.Code</span>
+        <p>@user?.UserName</p>
+    </aside>
+    <form class="form-card" asp-action="HoSo" method="post">
+        @Html.AntiForgeryToken()
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Họ tên</label><input class="form-control" asp-for="FullName" required /></div>
+            <div class="col-md-6"><label class="form-label">Mã học viên</label><input class="form-control" asp-for="Code" readonly /></div>
+            <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" type="email" asp-for="Email" required /></div>
+            <div class="col-md-6"><label class="form-label">Điện thoại</label><input class="form-control" asp-for="Phone" pattern="[0-9]{9,11}" title="Số điện thoại gồm 9 đến 11 chữ số" required /></div>
+            <div class="col-md-6"><label class="form-label">Ngày sinh</label><input class="form-control" type="date" asp-for="DateOfBirth" max="@DateTime.Today.AddYears(-5).ToString("yyyy-MM-dd")" min="@DateTime.Today.AddYears(-100).ToString("yyyy-MM-dd")" required /></div>
+            <div class="col-12"><label class="form-label">Địa chỉ</label><input class="form-control" asp-for="Address" required /></div>
+        </div>
+        <button class="btn btn-primary mt-4" type="submit">Cập nhật thông tin</button>
+    </form>
+</div>
+
+
+

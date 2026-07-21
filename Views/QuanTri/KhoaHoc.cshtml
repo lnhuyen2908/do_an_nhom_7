@@ -1,0 +1,50 @@
+@model List<Course>
+@{
+    ViewData["Title"] = "Quản lý khóa học";
+    var page = (int)(ViewBag.Page ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalItems = (int)(ViewBag.TotalItems ?? Model.Count);
+    var imageOptions = EnglishCenterStore.CourseImageOptions;
+}
+<div class="page-head"><div><p class="eyebrow">Admin</p><h1>Quản lý khóa học</h1></div><div class="admin-tabs"><a asp-action="TongQuan">Dashboard</a><a asp-action="GiaoVien">Giáo viên</a><a asp-action="TaiKhoan">Tài khoản</a></div></div>
+<form class="filter-bar" method="get"><input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tìm khóa học" /><button class="btn btn-primary">Tìm</button></form>
+<form class="form-card form-wide" asp-action="LuuKhoaHoc" method="post">
+    @Html.AntiForgeryToken()<h2>Thêm khóa học</h2>
+    <div class="row g-2"><div class="col-md-2"><input class="form-control" name="Code" placeholder="Mã khóa" pattern="KH[0-9]{2,}" title="Mã khóa học phải có dạng KH01" required /></div><div class="col-md-3"><input class="form-control" name="Name" placeholder="Tên khóa học" required /></div><div class="col-md-1"><input class="form-control" name="Level" placeholder="A1" required /></div><div class="col-md-2"><input class="form-control" name="Tuition" type="number" min="1" max="1000000000" placeholder="Học phí" required /></div><div class="col-md-2"><input class="form-control" name="Duration" placeholder="8 tuần" required /></div><div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Thêm</button></div><div class="col-md-4"><select class="form-select" name="ImageUrl"><option value="">Tự chọn ảnh theo khóa học</option>@foreach (var image in imageOptions) { <option value="@image">@image</option> }</select></div><div class="col-md-8"><input class="form-control" name="Description" placeholder="Mô tả khóa học" required /></div></div>
+</form>
+<div class="table-card"><table class="table"><thead><tr><th>Cập nhật khóa học</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+    <tr><td>
+        <form class="row g-2 align-items-center" asp-action="LuuKhoaHoc" method="post">
+            @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@item.Id" />
+            <div class="col-md-1"><input class="form-control form-control-sm" name="Code" value="@item.Code" pattern="KH[0-9]{2,}" title="Mã khóa học phải có dạng KH01" required /></div>
+            <div class="col-md-2"><input class="form-control form-control-sm" name="Name" value="@item.Name" required /></div>
+            <div class="col-md-1"><input class="form-control form-control-sm" name="Level" value="@item.Level" required /></div>
+            <div class="col-md-2"><input class="form-control form-control-sm" name="Tuition" type="number" min="1" max="1000000000" value="@item.Tuition.ToString("0")" required /></div>
+            <div class="col-md-2"><input class="form-control form-control-sm" name="Duration" value="@item.Duration" required /></div>
+            <div class="col-md-2"><select class="form-select form-select-sm" name="ImageUrl"><option value="">Tự chọn ảnh</option>@foreach (var image in imageOptions) { <option value="@image" selected="@(item.ImageUrl == image)">@image</option> }</select></div>
+            <div class="col-md-2"><input class="form-control form-control-sm" name="Description" value="@item.Description" required /></div>
+            <div class="col-md-2"><button class="btn btn-sm btn-outline-primary">Lưu</button></div>
+        </form>
+        <form asp-action="XoaKhoaHoc" method="post" class="mt-2" data-confirm="Bạn có chắc chắn muốn xóa khóa học này không?">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id" /><button class="btn btn-sm btn-outline-danger">Xóa khóa @item.Code</button></form>
+    </td></tr>
+}
+</tbody></table></div>
+@if (totalItems > 12)
+{
+    <nav class="pager-bar" aria-label="Phân trang quản lý khóa học">
+        <span>Hiển thị @Model.Count trên tổng @totalItems khóa học</span>
+        <div>
+            <a class="btn btn-outline-primary btn-sm @(page <= 1 ? "disabled" : "")" asp-action="KhoaHoc" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@(page - 1)">Trước</a>
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <a class="pager-number @(i == page ? "active" : "")" asp-action="KhoaHoc" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@i">@i</a>
+            }
+            <a class="btn btn-outline-primary btn-sm @(page >= totalPages ? "disabled" : "")" asp-action="KhoaHoc" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@(page + 1)">Sau</a>
+        </div>
+    </nav>
+}
+
+
+

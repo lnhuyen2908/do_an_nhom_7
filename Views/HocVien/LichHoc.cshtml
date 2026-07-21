@@ -1,0 +1,18 @@
+@model List<CourseClass>
+@{
+    ViewData["Title"] = "Lịch học";
+    var courses = ViewBag.Courses as List<Course> ?? new List<Course>();
+    var teachers = ViewBag.Teachers as List<Teacher> ?? new List<Teacher>();
+}
+<div class="page-head"><div><p class="eyebrow">Học viên</p><h1>Lịch học của tôi</h1></div></div>
+<div class="table-card"><table class="table align-middle"><thead><tr><th>Lớp</th><th>Khóa học</th><th>Giáo viên</th><th>Phòng</th><th>Thời gian</th><th>Bắt đầu</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+    var course = courses.FirstOrDefault(x => x.Id == item.CourseId);
+    var teacher = teachers.FirstOrDefault(x => x.Id == item.TeacherId);
+    <tr><td>@item.Code</td><td>@course?.Name</td><td>@teacher?.FullName</td><td>@item.Room</td><td>@item.StudyTime</td><td>@item.StartDate.ToString("dd/MM/yyyy")</td></tr>
+}
+</tbody></table></div>
+
+
+

@@ -1,0 +1,33 @@
+@model List<Teacher>
+@{
+    ViewData["Title"] = "Quản lý giáo viên";
+    var classes = ViewBag.Classes as List<CourseClass> ?? new List<CourseClass>();
+    var page = (int)(ViewBag.Page ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalItems = (int)(ViewBag.TotalItems ?? Model.Count);
+}
+<div class="page-head"><div><p class="eyebrow">Admin</p><h1>Quản lý giáo viên</h1></div><div class="admin-tabs"><a asp-action="TongQuan">Dashboard</a><a asp-action="KhoaHoc">Khóa học</a><a asp-action="TaiKhoan">Tài khoản</a></div></div>
+<form class="form-card form-wide" asp-action="LuuGiaoVien" method="post">@Html.AntiForgeryToken()<h2>Thêm giáo viên</h2><div class="row g-2"><div class="col-md-2"><input class="form-control" name="Code" placeholder="GV03" pattern="GV[0-9]{2,}" title="Mã giáo viên phải có dạng GV01" required /></div><div class="col-md-3"><input class="form-control" name="FullName" placeholder="Họ tên" required /></div><div class="col-md-2"><input class="form-control" name="Specialty" placeholder="Chuyên môn" required /></div><div class="col-md-2"><input class="form-control" name="Phone" placeholder="Điện thoại" pattern="[0-9]{9,11}" title="Số điện thoại gồm 9 đến 11 chữ số" required /></div><div class="col-md-2"><input class="form-control" name="Email" type="email" placeholder="Email" required /></div><div class="col-md-1"><button class="btn btn-primary w-100">Thêm</button></div></div></form>
+<div class="table-card"><table class="table"><thead><tr><th>Cập nhật giáo viên</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+<tr><td><form class="row g-2 align-items-center" asp-action="LuuGiaoVien" method="post">@Html.AntiForgeryToken()<input type="hidden" name="Id" value="@item.Id" /><div class="col-md-1"><input class="form-control form-control-sm" name="Code" value="@item.Code" pattern="GV[0-9]{2,}" title="Mã giáo viên phải có dạng GV01" required /></div><div class="col-md-3"><input class="form-control form-control-sm" name="FullName" value="@item.FullName" required /></div><div class="col-md-2"><input class="form-control form-control-sm" name="Specialty" value="@item.Specialty" required /></div><div class="col-md-2"><input class="form-control form-control-sm" name="Email" type="email" value="@item.Email" required /></div><div class="col-md-2"><input class="form-control form-control-sm" name="Phone" value="@item.Phone" pattern="[0-9]{9,11}" title="Số điện thoại gồm 9 đến 11 chữ số" required /></div><div class="col-md-2"><span class="me-2">@classes.Count(x => x.TeacherId == item.Id) lớp</span><button class="btn btn-sm btn-outline-primary">Lưu</button></div></form><form asp-action="XoaGiaoVien" method="post" class="mt-2" data-confirm="Bạn có chắc chắn muốn xóa giáo viên này không?">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id" /><button class="btn btn-sm btn-outline-danger">Xóa @item.Code</button></form></td></tr>
+}
+</tbody></table></div>
+@if (totalItems > 12)
+{
+    <nav class="pager-bar" aria-label="Phân trang giáo viên">
+        <span>Hiển thị @Model.Count trên tổng @totalItems giáo viên</span>
+        <div>
+            <a class="btn btn-outline-primary btn-sm @(page <= 1 ? "disabled" : "")" asp-action="GiaoVien" asp-route-page="@(page - 1)">Trước</a>
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <a class="pager-number @(i == page ? "active" : "")" asp-action="GiaoVien" asp-route-page="@i">@i</a>
+            }
+            <a class="btn btn-outline-primary btn-sm @(page >= totalPages ? "disabled" : "")" asp-action="GiaoVien" asp-route-page="@(page + 1)">Sau</a>
+        </div>
+    </nav>
+}
+
+
+

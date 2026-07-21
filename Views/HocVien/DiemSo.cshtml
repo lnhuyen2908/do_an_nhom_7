@@ -1,0 +1,18 @@
+@model List<Score>
+@{
+    ViewData["Title"] = "Kết quả học tập";
+    var classes = ViewBag.Classes as List<CourseClass> ?? new List<CourseClass>();
+    var courses = ViewBag.Courses as List<Course> ?? new List<Course>();
+}
+<div class="page-head"><div><p class="eyebrow">Học viên</p><h1>Kết quả học tập</h1></div></div>
+<div class="table-card"><table class="table align-middle"><thead><tr><th>Lớp</th><th>Khóa học</th><th>Giữa kỳ</th><th>Cuối kỳ</th><th>Kết quả</th><th>Nhận xét</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+    var c = classes.FirstOrDefault(x => x.Id == item.ClassId);
+    var course = c == null ? null : courses.FirstOrDefault(x => x.Id == c.CourseId);
+    <tr><td>@c?.Code</td><td>@course?.Name</td><td>@item.Midterm</td><td>@item.Final</td><td>@item.Result</td><td>@item.Comment</td></tr>
+}
+</tbody></table></div>
+
+
+

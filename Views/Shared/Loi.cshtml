@@ -1,0 +1,16 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Lỗi";
+}
+
+<h1 class="text-danger">Đã xảy ra lỗi.</h1>
+<p>Hệ thống không thể xử lý yêu cầu của bạn vào lúc này.</p>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>Mã yêu cầu:</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+<p>Vui lòng quay lại trang trước hoặc liên hệ quản trị viên nếu lỗi tiếp tục xảy ra.</p>

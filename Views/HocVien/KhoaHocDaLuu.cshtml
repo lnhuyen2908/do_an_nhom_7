@@ -1,0 +1,42 @@
+@model List<SavedCourse>
+@{
+    ViewData["Title"] = "Khóa học đã lưu";
+    var courses = ViewBag.Courses as List<Course> ?? new List<Course>();
+}
+
+<div class="page-head">
+    <div><p class="eyebrow">Học viên</p><h1>Khóa học đã lưu</h1></div>
+    <div class="admin-tabs"><a asp-controller="KhoaHoc" asp-action="DanhSach">Tìm khóa học</a><a asp-action="TongQuan">Khóa của tôi</a></div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="table-card"><p class="text-muted mb-0">Bạn chưa lưu khóa học nào.</p></div>
+}
+else
+{
+    <div class="course-grid">
+        @foreach (var item in Model)
+        {
+            var course = courses.FirstOrDefault(x => x.Id == item.CourseId);
+            if (course == null) { continue; }
+            <article class="course-card">
+                <img class="course-card-image" src="@EnglishCenterStore.CourseImage(course)" alt="@course.Name" />
+                <div class="course-card-body">
+                    <span class="course-level">@course.Level</span>
+                    <h2>@course.Name</h2>
+                    <p>@course.Description</p>
+                    <div class="course-meta"><span>@course.Duration</span><strong>@course.Tuition.ToString("N0") VND</strong></div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-sm btn-primary" asp-controller="KhoaHoc" asp-action="ChiTiet" asp-route-id="@course.Id">Xem chi tiết</a>
+                        <form asp-action="BoLuuKhoaHoc" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button class="btn btn-sm btn-outline-danger">Bỏ lưu</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+}

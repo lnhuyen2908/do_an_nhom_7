@@ -1,0 +1,92 @@
+@model Student
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<section class="auth-page auth-page-register">
+    <div class="auth-visual" aria-hidden="true">
+        <div class="auth-visual-content">
+            <span class="auth-brand-mark">Bắt đầu hành trình mới</span>
+            <p>Tạo tài khoản học viên để đăng ký khóa học phù hợp với mục tiêu của bạn.</p>
+        </div>
+    </div>
+
+    <div class="auth-form-panel">
+        <form class="auth-form auth-register-form" asp-action="DangKy" method="post">
+            @Html.AntiForgeryToken()
+            <div class="auth-heading">
+                <span class="eyebrow">Tài khoản học viên</span>
+                <h1>Đăng ký</h1>
+                <p>Điền đầy đủ thông tin để tạo tài khoản.</p>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger" role="alert">@ViewBag.Error</div>
+            }
+            @if (ViewBag.Errors is List<string> errors)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Vui lòng kiểm tra lại thông tin:</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach (var error in errors)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="auth-fields-grid">
+                <div class="auth-field">
+                    <label class="form-label" asp-for="FullName">Họ và tên</label>
+                    <input class="form-control" asp-for="FullName" autocomplete="name"
+                           placeholder="Nhập họ và tên" autofocus required />
+                </div>
+                <div class="auth-field">
+                    <label class="form-label" for="register-user-name">Tên đăng nhập</label>
+                    <input class="form-control" id="register-user-name" name="userName"
+                           value="@ViewBag.UserName" minlength="3" autocomplete="username"
+                           placeholder="Tối thiểu 3 ký tự" required />
+                </div>
+                <div class="auth-field">
+                    <label class="form-label" for="register-password">Mật khẩu</label>
+                    <input class="form-control" id="register-password" type="password" name="password"
+                           minlength="6" autocomplete="new-password"
+                           placeholder="Tối thiểu 6 ký tự" required />
+                </div>
+                <div class="auth-field">
+                    <label class="form-label" asp-for="DateOfBirth">Ngày sinh</label>
+                    <input class="form-control" type="date" asp-for="DateOfBirth"
+                           max="@DateTime.Today.AddYears(-5).ToString("yyyy-MM-dd")"
+                           min="@DateTime.Today.AddYears(-100).ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="auth-field">
+                    <label class="form-label" asp-for="Email">Email</label>
+                    <input class="form-control" type="email" asp-for="Email"
+                           autocomplete="email" placeholder="vidu@email.com" required />
+                </div>
+                <div class="auth-field">
+                    <label class="form-label" asp-for="Phone">Điện thoại</label>
+                    <input class="form-control" asp-for="Phone" inputmode="numeric"
+                           autocomplete="tel" placeholder="9 đến 11 chữ số"
+                           pattern="[0-9]{9,11}" title="Số điện thoại gồm 9 đến 11 chữ số" required />
+                </div>
+                <div class="auth-field auth-field-full">
+                    <label class="form-label" asp-for="Address">Địa chỉ</label>
+                    <input class="form-control" asp-for="Address" autocomplete="street-address"
+                           placeholder="Nhập địa chỉ hiện tại" required />
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-auth-submit" type="submit">Tạo tài khoản</button>
+
+            <div class="auth-switch">
+                <span>Đã có tài khoản?</span>
+                <a asp-action="DangNhap">Đăng nhập</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+

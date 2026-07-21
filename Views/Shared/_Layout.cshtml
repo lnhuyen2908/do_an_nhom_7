@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+@{
+    var currentUser = ViewBag.CurrentUser as UserAccount;
+}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Trung tâm Tiếng Anh</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @if (TempData["Message"] != null)
+    {
+        <div class="app-toast" data-app-toast role="status" aria-live="polite">
+            <span>@TempData["Message"]</span>
+        </div>
+    }
+    <header>
+        <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom app-nav">
+            <div class="container-fluid px-3 px-xl-4">
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="TrangChu" asp-action="TrangChu">Trung tâm Tiếng Anh</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navbar" aria-controls="main-navbar"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="main-navbar">
+                    <ul class="navbar-nav me-auto align-items-xl-center">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="TrangChu" asp-action="TrangChu">Trang chủ</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="course-menu" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">Khóa học</a>
+                            <ul class="dropdown-menu" aria-labelledby="course-menu">
+                                <li><a class="dropdown-item" asp-controller="KhoaHoc" asp-action="DanhSach">Danh sách khóa học</a></li>
+                                <li><a class="dropdown-item" asp-controller="KhoaHoc" asp-action="LichKhaiGiang">Lịch khai giảng</a></li>
+                            </ul>
+                        </li>
+                        @if (currentUser?.Role == "Admin")
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="QuanTri" asp-action="TongQuan">Dashboard</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="admin-training-menu" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Quản lý đào tạo</a>
+                                <ul class="dropdown-menu" aria-labelledby="admin-training-menu">
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="KhoaHoc">Khóa học</a></li>
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="LichKhaiGiang">Lớp học và lịch khai giảng</a></li>
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="DangKy">Duyệt đăng ký</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="admin-people-menu" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Nhân sự</a>
+                                <ul class="dropdown-menu" aria-labelledby="admin-people-menu">
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="GiaoVien">Giáo viên</a></li>
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="TaiKhoan">Tài khoản người dùng</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (currentUser?.Role == "Staff")
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="QuanTri" asp-action="TongQuan">Tổng quan</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="staff-training-menu" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Đào tạo</a>
+                                <ul class="dropdown-menu" aria-labelledby="staff-training-menu">
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="HocVien">Quản lý học viên</a></li>
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="LichKhaiGiang">Lớp học và lịch khai giảng</a></li>
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="DangKy">Duyệt đăng ký</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="staff-finance-menu" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Tài chính</a>
+                                <ul class="dropdown-menu" aria-labelledby="staff-finance-menu">
+                                    <li><a class="dropdown-item" asp-controller="QuanTri" asp-action="HocPhi">Quản lý học phí</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (currentUser?.Role == "Teacher")
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="teacher-menu" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Giảng dạy</a>
+                                <ul class="dropdown-menu" aria-labelledby="teacher-menu">
+                                    <li><a class="dropdown-item" asp-controller="GiaoVien" asp-action="LopHoc">Lớp được phân công</a></li>
+                                    <li><a class="dropdown-item" asp-controller="KhoaHoc" asp-action="LichKhaiGiang">Lịch giảng dạy</a></li>
+                                    <li><a class="dropdown-item" asp-controller="GiaoVien" asp-action="BaiGiang">Quản lý bài giảng</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (currentUser?.Role == "Student")
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="student-learning-menu" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Học tập</a>
+                                <ul class="dropdown-menu" aria-labelledby="student-learning-menu">
+                                    <li><a class="dropdown-item" asp-controller="HocVien" asp-action="TongQuan">Khóa học của tôi</a></li>
+                                    <li><a class="dropdown-item" asp-controller="HocVien" asp-action="KhoaHocDaLuu">Khóa học đã lưu</a></li>
+                                    <li><a class="dropdown-item" asp-controller="HocVien" asp-action="LichHoc">Lịch học</a></li>
+                                    <li><a class="dropdown-item" asp-controller="HocVien" asp-action="BaiGiang">Bài giảng</a></li>
+                                    <li><a class="dropdown-item" asp-controller="HocVien" asp-action="DiemSo">Kết quả học tập</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="HocVien" asp-action="HocPhi">Thanh toán</a></li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav ms-xl-auto align-items-xl-center">
+                        @if (currentUser == null)
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="TaiKhoan" asp-action="DangNhap">Đăng nhập</a></li>
+                            <li class="nav-item"><a class="btn btn-primary btn-sm ms-lg-2" asp-controller="TaiKhoan" asp-action="DangKy">Đăng ký</a></li>
+                        }
+                        else
+                        {
+                            <li class="nav-item dropdown account-menu">
+                                <a class="nav-link dropdown-toggle account-menu-toggle" href="#" id="account-menu" role="button"
+                                   data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                                    <span>@currentUser.FullName</span>
+                                    <small>@EnglishCenterStore.RoleText(currentUser.Role)</small>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="account-menu">
+                                    @if (currentUser.Role == "Student")
+                                    {
+                                        <li><a class="dropdown-item" asp-controller="HocVien" asp-action="HoSo">Thông tin cá nhân</a></li>
+                                    }
+                                    @if (currentUser.Role == "Teacher")
+                                    {
+                                        <li><a class="dropdown-item" asp-controller="GiaoVien" asp-action="HoSo">Thông tin cá nhân</a></li>
+                                    }
+                                    @if (currentUser.Role is "Student" or "Teacher")
+                                    {
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+                                    <li>
+                                        <form asp-controller="TaiKhoan" asp-action="DangXuat" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button class="dropdown-item account-logout" type="submit">Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container app-shell">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <section class="dictionary-widget" data-dictionary-widget>
+        <button class="dictionary-toggle" type="button" data-dictionary-toggle>Từ điển</button>
+        <div class="dictionary-panel" data-dictionary-panel hidden>
+            <div class="dictionary-head">
+                <strong>Từ điển Anh - Việt</strong>
+                <button type="button" aria-label="Đóng từ điển" data-dictionary-close>×</button>
+            </div>
+            <input class="form-control form-control-sm" data-dictionary-input placeholder="Nhập từ tiếng Anh" autocomplete="off" />
+            <div class="dictionary-result" data-dictionary-result>Nhập một từ để tra nhanh.</div>
+        </div>
+    </section>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+
+

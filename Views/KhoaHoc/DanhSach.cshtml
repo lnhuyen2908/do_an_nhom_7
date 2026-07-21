@@ -1,0 +1,76 @@
+@model List<Course>
+@{
+    ViewData["Title"] = "Khóa học";
+    var levels = ViewBag.Levels as List<string> ?? new List<string>();
+    var page = (int)(ViewBag.Page ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalItems = (int)(ViewBag.TotalItems ?? Model.Count);
+}
+
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Danh sách khóa học</p>
+        <h1>Chọn lộ trình tiếng Anh phù hợp</h1>
+    </div>
+</div>
+
+<form class="filter-bar" method="get">
+    <input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tìm theo mã hoặc tên khóa học" />
+    <select class="form-select" name="level">
+        <option value="">Tất cả trình độ</option>
+        @foreach (var level in levels)
+        {
+            <option value="@level" selected="@(ViewBag.Level == level)">@level</option>
+        }
+    </select>
+    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+</form>
+
+<div class="course-grid">
+    @foreach (var course in Model)
+    {
+        <article class="course-card">
+            <img class="course-card-image" src="@EnglishCenterStore.CourseImage(course)" alt="@course.Name" loading="lazy" />
+            <div class="course-card-body">
+                <span class="badge text-bg-light">@course.Code - @course.Level</span>
+                <h3>@course.Name</h3>
+                <p>@course.Description</p>
+                <div class="course-meta">
+                    <span>@course.Duration</span>
+                    <strong>@course.Tuition.ToString("N0") VND</strong>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" asp-action="ChiTiet" asp-route-id="@course.Id">Xem chi tiết</a>
+            </div>
+        </article>
+    }
+</div>
+
+@if (totalItems > 12)
+{
+    <nav class="pager-bar" aria-label="Phân trang khóa học">
+        <span>Hiển thị @Model.Count trên tổng @totalItems khóa học</span>
+        <div>
+            <a class="btn btn-outline-primary btn-sm @(page <= 1 ? "disabled" : "")"
+               asp-action="DanhSach"
+               asp-route-keyword="@ViewBag.Keyword"
+               asp-route-level="@ViewBag.Level"
+               asp-route-page="@(page - 1)">Trước</a>
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <a class="pager-number @(i == page ? "active" : "")"
+                   asp-action="DanhSach"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-level="@ViewBag.Level"
+                   asp-route-page="@i">@i</a>
+            }
+            <a class="btn btn-outline-primary btn-sm @(page >= totalPages ? "disabled" : "")"
+               asp-action="DanhSach"
+               asp-route-keyword="@ViewBag.Keyword"
+               asp-route-level="@ViewBag.Level"
+               asp-route-page="@(page + 1)">Sau</a>
+        </div>
+    </nav>
+}
+
+
+
