@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace web_do_an1.Models
 {
     public class UserAccount
@@ -18,6 +20,7 @@ namespace web_do_an1.Models
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng chọn vai trò.")]
+        [ForeignKey(nameof(RoleItem))]
         public string Role { get; set; } = "Student";
 
         public int LinkedId { get; set; }

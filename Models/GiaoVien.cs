@@ -24,7 +24,7 @@ namespace web_do_an1.Models
         [Required(ErrorMessage = "Vui lòng nhập chuyên môn của giáo viên.")]
         public string Specialty { get; set; } = string.Empty;
 
-        public List<CourseClass> Classes { get; set; } = new();
-        public List<CourseLecture> Lectures { get; set; } = new();
+        public ICollection<CourseClass> Classes { get; set; } = new List<CourseClass>();
+        public ICollection<CourseLecture> Lectures { get; set; } = new List<CourseLecture>();
     }
 }

@@ -12,6 +12,6 @@ namespace web_do_an1.Models
         [Required(ErrorMessage = "Vui lòng nhập tên hiển thị của vai trò.")]
         public string DisplayName { get; set; } = string.Empty;
 
-        public List<UserAccount> Users { get; set; } = new();
+        public ICollection<UserAccount> Users { get; set; } = new List<UserAccount>();
     }
 }

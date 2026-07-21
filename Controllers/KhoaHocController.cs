@@ -1,12 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using web_do_an1.Data;
 using web_do_an1.Models;
+using web_do_an1.Services;
 
 namespace web_do_an1.Controllers
 {
     public class KhoaHocController : CoSoController
     {
+        public KhoaHocController(EnglishCenterDbContext db) : base(db)
+        {
+        }
+
         public IActionResult DanhSach(string? keyword, string? level, int page = 1)
         {
             const int pageSize = EnglishCenterStore.DefaultPageSize;
@@ -133,7 +139,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult DangKyKhoaHoc(int courseId)
         {
             var auth = RequireRole("Student");
@@ -187,7 +192,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult LuuKhoaHoc(int courseId)
         {
             var auth = RequireRole("Student");

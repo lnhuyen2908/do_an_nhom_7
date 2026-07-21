@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using web_do_an1.Data;
 using web_do_an1.Models;
+using web_do_an1.Services;
+using web_do_an1.ViewModels;
 
 namespace web_do_an1.Controllers
 {
@@ -15,7 +17,12 @@ namespace web_do_an1.Controllers
         private bool _studentLoaded;
         private bool _teacherLoaded;
 
-        protected EnglishCenterDbContext Db => HttpContext.RequestServices.GetRequiredService<EnglishCenterDbContext>();
+        protected CoSoController(EnglishCenterDbContext db)
+        {
+            Db = db;
+        }
+
+        protected EnglishCenterDbContext Db { get; }
 
         protected UserAccount? CurrentUser
         {
@@ -139,12 +146,10 @@ namespace web_do_an1.Controllers
                 OutstandingTuition = Db.Payments.Sum(x => x.Amount - x.PaidAmount),
                 PaymentTransactionCount = Db.PaymentTransactions.Count(),
                 FeaturedCourses = courses.Take(featuredCourseCount).ToList(),
-                ClassStatistics = classes.Select(courseClass => new ClassStatistic
-                {
-                    ClassCode = courseClass.Code,
-                    CourseName = courseNames.GetValueOrDefault(courseClass.CourseId, string.Empty),
-                    StudentCount = approvedByClass.GetValueOrDefault(courseClass.Id)
-                }).ToList()
+                ClassStatistics = classes.Select(courseClass => (
+                    ClassCode: courseClass.Code,
+                    CourseName: courseNames.GetValueOrDefault(courseClass.CourseId, string.Empty),
+                    StudentCount: approvedByClass.GetValueOrDefault(courseClass.Id))).ToList()
             };
         }
     }

@@ -3,19 +3,23 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Net.Mail;
+using web_do_an1.Data;
 using web_do_an1.Models;
 
 namespace web_do_an1.Controllers
 {
     public class TaiKhoanController : CoSoController
     {
+        public TaiKhoanController(EnglishCenterDbContext db) : base(db)
+        {
+        }
+
         public IActionResult DangNhap()
         {
             return View();
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         [EnableRateLimiting("dang-nhap")]
         public IActionResult DangNhap(string userName, string password)
         {
@@ -57,7 +61,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult DangKy(
             [Bind("FullName,Email,Phone,DateOfBirth,Address")] Student student,
             string userName,
@@ -112,7 +115,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult DangXuat()
         {
             HttpContext.Session.Clear();

@@ -1,11 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace web_do_an1.Models
 {
     public class PaymentTransaction
     {
         public int Id { get; set; }
+
+        [ForeignKey(nameof(Payment))]
         public int PaymentId { get; set; }
+
+        [ForeignKey(nameof(Student))]
         public int StudentId { get; set; }
 
         [Range(-1000000000, 1000000000, ErrorMessage = "Số tiền giao dịch không hợp lệ.")]

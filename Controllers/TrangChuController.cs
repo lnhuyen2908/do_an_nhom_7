@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using web_do_an1.Data;
 using web_do_an1.Models;
 
 namespace web_do_an1.Controllers
@@ -8,7 +9,7 @@ namespace web_do_an1.Controllers
     {
         private readonly ILogger<TrangChuController> _logger;
 
-        public TrangChuController(ILogger<TrangChuController> logger)
+        public TrangChuController(EnglishCenterDbContext db, ILogger<TrangChuController> logger) : base(db)
         {
             _logger = logger;
         }
@@ -21,7 +22,7 @@ namespace web_do_an1.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Loi()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(model: Activity.Current?.Id ?? HttpContext.TraceIdentifier);
         }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
 using web_do_an1.Data;
 using web_do_an1.Models;
+using web_do_an1.Services;
 
 namespace web_do_an1
 {
@@ -57,10 +58,6 @@ namespace web_do_an1
             {
                 var db = scope.ServiceProvider.GetRequiredService<EnglishCenterDbContext>();
                 db.Database.Migrate();
-                if (!db.Teachers.Any(x => x.Code == "GV20"))
-                {
-                    SampleDataUtility.NormalizeTeachersAndClasses(db);
-                }
                 PasswordUtility.UsePlainTextDemoPasswords(db);
             }
 

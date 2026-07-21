@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.IO.Compression;
+using web_do_an1.Data;
 using web_do_an1.Models;
+using web_do_an1.Services;
 
 namespace web_do_an1.Controllers
 {
@@ -10,7 +12,7 @@ namespace web_do_an1.Controllers
     {
         private readonly IWebHostEnvironment _environment;
 
-        public GiaoVienController(IWebHostEnvironment environment)
+        public GiaoVienController(EnglishCenterDbContext db, IWebHostEnvironment environment) : base(db)
         {
             _environment = environment;
         }
@@ -79,7 +81,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         [RequestSizeLimit(LectureFileStorage.MaxFileSize + 1024 * 1024)]
         public IActionResult TaiBaiGiang(int courseId, string title, IFormFile? file)
         {
@@ -201,7 +202,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult XoaBaiGiang(int id)
         {
             var auth = RequireRole("Teacher");
@@ -220,7 +220,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult LuuDiem(int classId, int studentId, double midterm, double final, string comment)
         {
             var auth = RequireRole("Teacher");
@@ -266,7 +265,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult LuuDiemDanh(int classId, int studentId, bool isPresent, string note)
         {
             var auth = RequireRole("Teacher");
@@ -322,7 +320,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult HoSo([Bind("FullName,Email,Phone,Specialty")] Teacher model)
         {
             var auth = RequireRole("Teacher");
@@ -400,6 +397,4 @@ namespace web_do_an1.Controllers
         }
     }
 }
-
-
 

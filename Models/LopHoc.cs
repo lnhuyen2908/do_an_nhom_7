@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace web_do_an1.Models
 {
     public class CourseClass
@@ -11,9 +13,11 @@ namespace web_do_an1.Models
         public string Code { get; set; } = string.Empty;
 
         [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn khóa học.")]
+        [ForeignKey(nameof(Course))]
         public int CourseId { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn giáo viên.")]
+        [ForeignKey(nameof(Teacher))]
         public int TeacherId { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập phòng học.")]
@@ -29,8 +33,8 @@ namespace web_do_an1.Models
 
         public Course? Course { get; set; }
         public Teacher? Teacher { get; set; }
-        public List<Enrollment> Enrollments { get; set; } = new();
-        public List<Score> Scores { get; set; } = new();
-        public List<AttendanceRecord> AttendanceRecords { get; set; } = new();
+        public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public ICollection<Score> Scores { get; set; } = new List<Score>();
+        public ICollection<AttendanceRecord> AttendanceRecords { get; set; } = new List<AttendanceRecord>();
     }
 }

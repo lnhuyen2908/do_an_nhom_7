@@ -26,9 +26,9 @@ namespace web_do_an1.Models
         public string Description { get; set; } = string.Empty;
 
         public string ImageUrl { get; set; } = string.Empty;
-        public List<CourseClass> Classes { get; set; } = new();
-        public List<Enrollment> Enrollments { get; set; } = new();
-        public List<CourseLecture> Lectures { get; set; } = new();
-        public List<SavedCourse> SavedCourses { get; set; } = new();
+        public ICollection<CourseClass> Classes { get; set; } = new List<CourseClass>();
+        public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public ICollection<CourseLecture> Lectures { get; set; } = new List<CourseLecture>();
+        public ICollection<SavedCourse> SavedCourses { get; set; } = new List<SavedCourse>();
     }
 }

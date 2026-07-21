@@ -1,12 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using web_do_an1.Data;
 using web_do_an1.Models;
+using web_do_an1.Services;
 
 namespace web_do_an1.Controllers
 {
     public class HocVienController : CoSoController
     {
+        public HocVienController(EnglishCenterDbContext db) : base(db)
+        {
+        }
+
         public IActionResult TongQuan()
         {
             var auth = RequireRole("Student");
@@ -116,7 +122,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult BoLuuKhoaHoc(int id)
         {
             var auth = RequireRole("Student");
@@ -145,7 +150,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult HoSo([Bind("FullName,Email,Phone,DateOfBirth,Address")] Student model)
         {
             var auth = RequireRole("Student");
@@ -206,7 +210,6 @@ namespace web_do_an1.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult XacNhanThanhToan(int id, decimal paidAmount, string paymentMethod)
         {
             var auth = RequireRole("Student");
