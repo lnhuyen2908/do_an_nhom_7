@@ -1,0 +1,36 @@
+@model IEnumerable<Payment>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Quản lý học phí";
+}
+<section class="page-heading"><div><p class="section-kicker">Tài chính</p><h1>Quản lý học phí</h1><p>Ghi nhận thanh toán và theo dõi công nợ của từng học viên.</p></div></section>
+<section class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Phải đóng</th><th>Đã đóng</th><th>Trạng thái</th><th style="min-width:360px">Cập nhật</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                var statusText = item.Status switch { PaymentState.Unpaid => "Chưa thanh toán", PaymentState.PartiallyPaid => "Thanh toán một phần", _ => "Đã thanh toán" };
+                <tr>
+                    <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
+                    <td>@item.Enrollment.Course.Name</td>
+                    <td>@item.Amount.ToString("N0") đ</td>
+                    <td>@item.PaidAmount.ToString("N0") đ</td>
+                    <td><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></td>
+                    <td>
+                        <form asp-action="RecordPayment" method="post" class="inline-management-form">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <input class="form-control form-control-sm" type="number" min="0" max="@item.Amount.ToString("0")" step="1" name="paidAmount" value="@item.PaidAmount.ToString("0")" />
+                            <select class="form-select form-select-sm" name="paymentMethod">
+                                <option value="Cash">Tiền mặt</option><option value="BankTransfer">Chuyển khoản</option><option value="Card">Thẻ</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary">Lưu</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

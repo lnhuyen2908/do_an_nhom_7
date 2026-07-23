@@ -1,0 +1,12 @@
+@model IEnumerable<SavedCourse>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Khóa học đã lưu";
+}
+<section class="page-heading"><div><p class="section-kicker">Học viên</p><h1>Khóa học đã lưu</h1><p>Danh sách chương trình bạn muốn xem lại sau.</p></div><a class="btn btn-primary" asp-controller="Courses" asp-action="Index">Khám phá khóa học</a></section>
+<div class="course-grid">
+@foreach (var item in Model)
+{
+    <article class="course-card"><img src="@item.Course.ImageUrl" alt="@item.Course.Name" /><div class="course-card-body"><span class="badge text-bg-light">@item.Course.Level</span><h2>@item.Course.Name</h2><p>@item.Course.Description</p><div class="action-strip"><a class="btn btn-primary" asp-controller="Courses" asp-action="Details" asp-route-id="@item.CourseId">Xem chi tiết</a><form asp-action="Remove" method="post"><input type="hidden" name="id" value="@item.Id" /><button class="btn btn-outline-danger">Bỏ lưu</button></form></div></div></article>
+}
+</div>

@@ -1,0 +1,21 @@
+@model IEnumerable<CourseClass>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Lớp giảng dạy";
+}
+<section class="page-heading"><div><p class="section-kicker">Giáo viên</p><h1>Lớp giảng dạy</h1><p>Xem danh sách lớp, học viên, điểm danh và nhập kết quả học tập.</p></div></section>
+<div class="record-grid">
+@foreach (var item in Model)
+{
+    var enrolled = item.Enrollments.Count(x => x.Status == EnrollmentState.Approved);
+    <article class="record-card">
+        <div class="section-title-row"><div><span class="badge text-bg-light">@item.Code</span><h2>@item.Course.Name</h2></div><strong>@enrolled/@item.Capacity học viên</strong></div>
+        <p>@item.Schedule · @item.Room</p><p>Bắt đầu: <strong>@item.StartDate.ToString("dd/MM/yyyy")</strong></p>
+        <div class="action-strip">
+            <a class="btn btn-outline-primary" asp-action="ClassRoster" asp-route-id="@item.Id">Danh sách học viên</a>
+            <a class="btn btn-primary" asp-controller="AttendanceRecords" asp-action="Manage" asp-route-classId="@item.Id">Điểm danh</a>
+            <a class="btn btn-primary" asp-controller="Scores" asp-action="Manage" asp-route-classId="@item.Id">Nhập điểm</a>
+        </div>
+    </article>
+}
+</div>

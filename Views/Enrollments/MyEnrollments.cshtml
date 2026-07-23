@@ -1,0 +1,28 @@
+@model IEnumerable<Enrollment>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Khóa học của tôi";
+}
+<section class="page-heading"><div><p class="section-kicker">Học viên</p><h1>Khóa học của tôi</h1><p>Theo dõi trạng thái đăng ký và lớp đã được xếp.</p></div><a class="btn btn-primary" asp-controller="Courses" asp-action="Index">Tìm khóa học</a></section>
+<div class="record-grid">
+@foreach (var item in Model)
+{
+    var statusText = item.Status switch { EnrollmentState.Pending => "Chờ duyệt", EnrollmentState.Approved => "Đã duyệt", _ => "Đã hủy" };
+    <article class="record-card">
+        <div class="section-title-row"><div><span class="badge text-bg-light">@item.Course.Code</span><h2>@item.Course.Name</h2></div><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></div>
+        <p>@(item.CourseClass is null ? "Đang chờ xếp lớp" : $"{item.CourseClass.Code} · {item.CourseClass.Schedule}")</p>
+        @if (item.CourseClass?.Teacher is not null)
+        {
+            <p>Giáo viên: <strong>@item.CourseClass.Teacher.FullName</strong></p>
+        }
+        <p>Học phí: <strong>@item.Payment?.PaidAmount.ToString("N0") / @item.Payment?.Amount.ToString("N0") đ</strong></p>
+        <div class="action-strip">
+            <a class="btn btn-outline-primary" asp-controller="Courses" asp-action="Details" asp-route-id="@item.CourseId">Chi tiết</a>
+            @if (item.Status == EnrollmentState.Pending)
+            {
+                <form asp-action="Cancel" method="post"><input type="hidden" name="id" value="@item.Id" /><button class="btn btn-outline-danger" type="submit">Hủy đăng ký</button></form>
+            }
+        </div>
+    </article>
+}
+</div>

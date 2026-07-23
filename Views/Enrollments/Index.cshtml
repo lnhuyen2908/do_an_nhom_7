@@ -1,0 +1,48 @@
+@model IEnumerable<Enrollment>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Quản lý đăng ký khóa học";
+    var classes = ViewBag.Classes as IEnumerable<CourseClass> ?? [];
+    var seats = ViewBag.ClassSeats as IDictionary<int, int> ?? new Dictionary<int, int>();
+}
+
+<section class="page-heading">
+    <div><p class="section-kicker">Đào tạo</p><h1>Quản lý đăng ký khóa học</h1><p>Duyệt hồ sơ và xếp học viên vào đúng lớp còn chỗ.</p></div>
+</section>
+<section class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Đăng ký</th><th>Trạng thái</th><th style="min-width:340px">Xử lý</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                var courseClasses = classes.Where(x => x.CourseId == item.CourseId);
+                var statusText = item.Status switch { EnrollmentState.Pending => "Chờ duyệt", EnrollmentState.Approved => "Đã duyệt", _ => "Đã hủy" };
+                <tr>
+                    <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
+                    <td>@item.Course.Name<small class="d-block text-muted">@(item.CourseClass?.Code ?? "Chưa xếp lớp")</small></td>
+                    <td>@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></td>
+                    <td>
+                        <form asp-action="UpdateStatus" method="post" class="inline-management-form">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <select class="form-select form-select-sm" name="courseClassId">
+                                <option value="">Chọn lớp</option>
+                                @foreach (var courseClass in courseClasses)
+                                {
+                                    var occupied = seats.TryGetValue(courseClass.Id, out var value) ? value : 0;
+                                    <option value="@courseClass.Id" selected="@(item.CourseClassId == courseClass.Id)">
+                                        @courseClass.Code · @courseClass.Schedule (@occupied/@courseClass.Capacity)
+                                    </option>
+                                }
+                            </select>
+                            <button class="btn btn-sm btn-primary" name="status" value="Approved">Duyệt</button>
+                            <button class="btn btn-sm btn-outline-danger" name="status" value="Cancelled">Hủy</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

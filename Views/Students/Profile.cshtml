@@ -1,0 +1,15 @@
+@model Student
+@{
+    ViewData["Title"] = "Hồ sơ học viên";
+}
+<section class="page-heading"><div><p class="section-kicker">@Model.Code</p><h1>Hồ sơ học viên</h1><p>Cập nhật thông tin cá nhân được sử dụng tại trung tâm.</p></div></section>
+<section class="content-card narrow-card">
+    <form asp-action="Profile" method="post" class="form-grid">
+        <div class="form-field full"><label asp-for="FullName"></label><input class="form-control" asp-for="FullName" /><span asp-validation-for="FullName"></span></div>
+        <div class="form-field"><label asp-for="Email"></label><input class="form-control" asp-for="Email" /><span asp-validation-for="Email"></span></div>
+        <div class="form-field"><label asp-for="Phone"></label><input class="form-control" asp-for="Phone" /><span asp-validation-for="Phone"></span></div>
+        <div class="form-field"><label asp-for="DateOfBirth"></label><input class="form-control" asp-for="DateOfBirth" /><span asp-validation-for="DateOfBirth"></span></div>
+        <div class="form-field full"><label asp-for="Address"></label><input class="form-control" asp-for="Address" /><span asp-validation-for="Address"></span></div>
+        <div class="full"><button class="btn btn-primary">Lưu hồ sơ</button></div>
+    </form>
+</section>

@@ -1,0 +1,26 @@
+@model IEnumerable<CourseLecture>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Quản lý bài giảng";
+    var courses = ViewBag.Courses as IEnumerable<Course> ?? [];
+}
+<section class="page-heading"><div><p class="section-kicker">Giáo viên</p><h1>Quản lý bài giảng</h1><p>Chia sẻ tài liệu học tập cho các khóa học đang phụ trách.</p></div></section>
+<section class="content-card">
+    <h2>Thêm bài giảng</h2>
+    <form asp-action="AddLecture" method="post" class="form-grid">
+        <div class="form-field"><label>Khóa học</label><select class="form-select" name="courseId" required>@foreach(var course in courses){<option value="@course.Id">@course.Code · @course.Name</option>}</select></div>
+        <div class="form-field"><label>Tiêu đề</label><input class="form-control" name="title" maxlength="200" required /></div>
+        <div class="form-field"><label>Tên tệp</label><input class="form-control" name="fileName" maxlength="255" placeholder="Bai-01.pdf" required /></div>
+        <div class="form-field"><label>Đường dẫn tài liệu</label><input class="form-control" name="fileUrl" maxlength="500" placeholder="https://..." required /></div>
+        <div class="full"><button class="btn btn-primary">Thêm bài giảng</button></div>
+    </form>
+</section>
+<section class="content-card">
+    <h2>Tài liệu đã chia sẻ</h2>
+    <div class="resource-grid">
+    @foreach(var item in Model)
+    {
+        <article class="resource-card"><span class="badge text-bg-light">@item.Course.Code</span><h3>@item.Title</h3><p>@item.FileName</p><small>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm")</small><div class="action-strip mt-3"><a class="btn btn-outline-primary" href="@item.FileUrl" target="_blank" rel="noopener">Mở tài liệu</a><form asp-action="RemoveLecture" method="post"><input type="hidden" name="id" value="@item.Id" /><button class="btn btn-outline-danger">Xóa</button></form></div></article>
+    }
+    </div>
+</section>

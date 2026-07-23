@@ -1,0 +1,19 @@
+@model IEnumerable<CourseClass>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Lịch khai giảng";
+}
+<section class="page-heading"><div><p class="section-kicker">Lịch đào tạo</p><h1>Lịch khai giảng</h1><p>Tìm lớp học phù hợp theo khóa học, hình thức và thời gian.</p></div></section>
+<section class="content-card">
+    <form method="get" class="filter-bar">
+        <label>Tìm lớp hoặc khóa học<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tên khóa học, mã lớp..." /></label>
+        <label>Hình thức<select class="form-select" name="mode"><option value="">Tất cả</option><option value="Offline" selected="@(ViewBag.Mode == "Offline")">Tại trung tâm</option><option value="Online" selected="@(ViewBag.Mode == "Online")">Trực tuyến</option></select></label>
+        <button class="btn btn-primary">Tìm kiếm</button>
+    </form>
+    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Lớp</th><th>Khóa học</th><th>Giáo viên</th><th>Lịch học</th><th>Phòng</th><th>Khai giảng</th><th></th></tr></thead><tbody>
+    @foreach(var item in Model)
+    {
+        <tr><td><strong>@item.Code</strong></td><td>@item.Course.Name</td><td>@item.Teacher.FullName</td><td>@item.Schedule</td><td>@item.Room</td><td>@item.StartDate.ToString("dd/MM/yyyy")</td><td><a class="btn btn-sm btn-outline-primary" asp-controller="Courses" asp-action="Details" asp-route-id="@item.CourseId">Chi tiết</a></td></tr>
+    }
+    </tbody></table></div>
+</section>

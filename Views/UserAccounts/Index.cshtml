@@ -1,0 +1,46 @@
+@model IEnumerable<UserAccount>
+@{
+    ViewData["Title"] = "Tài khoản";
+}
+
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Hệ thống</p>
+        <h1>Tài khoản người dùng</h1>
+    </div>
+    <a class="btn btn-primary" asp-action="Create">Tạo tài khoản</a>
+</div>
+
+<div class="table-card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Họ tên</th>
+                <th>Tên đăng nhập</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Liên kết</th>
+                <th>Hoạt động</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FullName</td>
+                <td>@item.UserName</td>
+                <td>@item.Email</td>
+                <td>@item.Role.DisplayName</td>
+                <td>@(item.Student?.FullName ?? item.Teacher?.FullName ?? "—")</td>
+                <td>@(item.IsActive ? "Có" : "Không")</td>
+                <td class="text-nowrap">
+                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,48 @@
+@model web_do_an1.Models.Enrollment
+
+@{
+    ViewData["Title"] = "Thêm mới";
+}
+
+<h1>Thêm mới</h1>
+
+<h4>Enrollment</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="StudentId" class="control-label"></label>
+                <select asp-for="StudentId" class ="form-control" asp-items="ViewBag.StudentId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="CourseId" class="control-label"></label>
+                <select asp-for="CourseId" class ="form-control" asp-items="ViewBag.CourseId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="CourseClassId" class="control-label"></label>
+                <select asp-for="CourseClassId" class ="form-control" asp-items="ViewBag.CourseClassId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status" class="control-label"></label>
+                <select asp-for="Status" class="form-control"
+                        asp-items="Html.GetEnumSelectList<EnrollmentState>()"></select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RegisteredAt" class="control-label"></label>
+                <input asp-for="RegisteredAt" class="form-control" />
+                <span asp-validation-for="RegisteredAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Lưu" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Quay lại danh sách</a>
+</div>
+

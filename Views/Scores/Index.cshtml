@@ -1,0 +1,53 @@
+@model IEnumerable<web_do_an1.Models.Score>
+
+@{
+    ViewData["Title"] = "Danh sách";
+}
+
+<section class="page-heading"><div><p class="section-kicker">Đào tạo</p><h1>Kết quả học tập</h1><p>Tổng hợp điểm và nhận xét của học viên theo lớp.</p></div></section>
+<section class="content-card">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.MidtermScore)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FinalScore)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Comment)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Student)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CourseClass)
+            </th>
+            <th>Trung bình</th><th>Kết quả</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MidtermScore)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FinalScore)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Comment)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Student.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CourseClass.Code)
+            </td>
+            <td>@item.AverageScore.ToString("0.0")</td><td>@item.Result</td>
+        </tr>
+}
+    </tbody>
+</table>
+</section>

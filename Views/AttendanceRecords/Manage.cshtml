@@ -1,0 +1,29 @@
+@model IEnumerable<Enrollment>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Điểm danh";
+    var courseClass = (CourseClass)ViewBag.CourseClass;
+    var studyDate = (DateTime)ViewBag.StudyDate;
+    var attendance = ViewBag.Attendance as IEnumerable<AttendanceRecord> ?? [];
+}
+<section class="page-heading"><div><p class="section-kicker">@courseClass.Code</p><h1>Điểm danh · @courseClass.Course.Name</h1><p>Ghi nhận tình trạng tham gia học theo từng ngày.</p></div><a class="btn btn-outline-secondary" asp-controller="CourseClasses" asp-action="MyClasses">Quay lại lớp dạy</a></section>
+<section class="content-card">
+    <form asp-action="Manage" method="get" class="filter-bar"><input type="hidden" name="classId" value="@courseClass.Id" /><label>Ngày học<input class="form-control" type="date" name="studyDate" value="@studyDate.ToString("yyyy-MM-dd")" /></label><button class="btn btn-outline-primary">Xem ngày</button></form>
+    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Học viên</th><th style="min-width:520px">Tình trạng</th></tr></thead><tbody>
+    @foreach (var enrollment in Model)
+    {
+        var record = attendance.FirstOrDefault(x => x.StudentId == enrollment.StudentId);
+        <tr>
+            <td><strong>@enrollment.Student.FullName</strong><small class="d-block text-muted">@enrollment.Student.Code</small></td>
+            <td>
+                <form asp-action="Save" method="post" class="attendance-entry-form">
+                    <input type="hidden" name="classId" value="@courseClass.Id" /><input type="hidden" name="studentId" value="@enrollment.StudentId" /><input type="hidden" name="studyDate" value="@studyDate.ToString("yyyy-MM-dd")" />
+                    <label class="form-check"><input class="form-check-input" type="checkbox" name="isPresent" value="true" checked="@(record?.IsPresent == true)" /><span class="form-check-label">Có mặt</span></label>
+                    <input class="form-control form-control-sm" name="note" maxlength="500" placeholder="Ghi chú" value="@record?.Note" />
+                    <button class="btn btn-sm btn-primary">Lưu</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody></table></div>
+</section>

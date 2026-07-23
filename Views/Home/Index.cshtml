@@ -1,0 +1,73 @@
+@model IEnumerable<Course>
+@{
+    ViewData["Title"] = "Trang chủ";
+    var roleName = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
+    var roleDisplay = roleName switch
+    {
+        "Admin" => "Quản trị viên",
+        "Staff" => "Nhân viên đào tạo",
+        "Teacher" => "Giáo viên",
+        "Student" => "Học viên",
+        _ => string.Empty
+    };
+}
+
+<section class="hero-panel hero-home">
+    <div class="hero-content">
+        <p class="eyebrow">Website quản lý trung tâm tiếng Anh</p>
+        <h1>Quản lý khóa học, lớp học, giáo viên và học viên trong một hệ thống.</h1>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <p class="hero-welcome">
+                Chào mừng bạn '@User.Identity.Name' đến với trang web của chúng tôi.
+            </p>
+        }
+        <div class="hero-actions">
+            <a class="btn btn-primary" asp-controller="Courses" asp-action="Index">Xem khóa học</a>
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <a class="btn btn-outline-primary" asp-controller="Auth" asp-action="Login">Đăng nhập</a>
+            }
+        </div>
+    </div>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="login-note hero-login">
+            <span>Tài khoản</span>
+            <strong>@User.FindFirst("UserName")?.Value</strong>
+            <span>@roleDisplay</span>
+            <a class="btn btn-primary btn-sm mt-2" asp-controller="Courses" asp-action="Index">
+                Tiếp tục sử dụng
+            </a>
+        </div>
+    }
+</section>
+
+<div class="section-title">
+    <h2>Khóa học nổi bật</h2>
+    <a asp-controller="Courses" asp-action="Index">Xem tất cả</a>
+</div>
+
+<div class="course-grid">
+    @foreach (var course in Model)
+    {
+        <article class="course-card">
+            <img class="course-card-image" src="@course.ImageUrl"
+                 alt="@course.Name" loading="lazy" />
+            <div class="course-card-body">
+                <span class="badge text-bg-light">@course.Level</span>
+                <h3>@course.Name</h3>
+                <p>@course.Description</p>
+                <div class="course-meta">
+                    <span>@course.Duration</span>
+                    <strong>@course.Tuition.ToString("N0") VND</strong>
+                </div>
+                <a class="btn btn-sm btn-outline-primary"
+                   asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id">
+                    Chi tiết
+                </a>
+            </div>
+        </article>
+    }
+</div>

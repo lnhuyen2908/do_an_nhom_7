@@ -1,0 +1,51 @@
+@model IEnumerable<web_do_an1.Models.AttendanceRecord>
+
+@{
+    ViewData["Title"] = "Danh sách";
+}
+
+<section class="page-heading"><div><p class="section-kicker">Đào tạo</p><h1>Lịch sử điểm danh</h1><p>Tổng hợp tình trạng tham gia học theo lớp và ngày học.</p></div></section>
+<section class="content-card">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.StudyDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsPresent)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Note)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Student)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CourseClass)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.StudyDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsPresent)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Note)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Student.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CourseClass.Code)
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+</section>

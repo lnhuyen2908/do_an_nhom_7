@@ -1,0 +1,49 @@
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Tổng quan vận hành";
+    var recent = ViewBag.RecentEnrollments as IEnumerable<Enrollment> ?? [];
+    var expected = (decimal)ViewBag.ExpectedTuition;
+    var collected = (decimal)ViewBag.CollectedTuition;
+}
+
+<section class="page-heading">
+    <div>
+        <p class="section-kicker">Quản trị trung tâm</p>
+        <h1>Tổng quan vận hành</h1>
+        <p>Theo dõi quy mô đào tạo, đăng ký và tình hình thu học phí.</p>
+    </div>
+</section>
+
+<section class="dashboard-grid">
+    <article class="stat-card"><span>Học viên</span><strong>@ViewBag.StudentCount</strong></article>
+    <article class="stat-card"><span>Giáo viên</span><strong>@ViewBag.TeacherCount</strong></article>
+    <article class="stat-card"><span>Khóa học</span><strong>@ViewBag.CourseCount</strong></article>
+    <article class="stat-card"><span>Lớp đang quản lý</span><strong>@ViewBag.ClassCount</strong></article>
+    <article class="stat-card accent"><span>Đăng ký chờ duyệt</span><strong>@ViewBag.PendingEnrollmentCount</strong></article>
+    <article class="stat-card"><span>Đăng ký đã duyệt</span><strong>@ViewBag.ApprovedEnrollmentCount</strong></article>
+    <article class="stat-card wide"><span>Học phí đã thu</span><strong>@collected.ToString("N0") đ</strong><small>/ @expected.ToString("N0") đ dự kiến</small></article>
+</section>
+
+<section class="content-card">
+    <div class="section-title-row">
+        <div><p class="section-kicker">Hoạt động gần đây</p><h2>Đăng ký khóa học mới</h2></div>
+        <a class="btn btn-primary" asp-controller="Enrollments" asp-action="Index">Xử lý đăng ký</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Ngày đăng ký</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+            @foreach (var item in recent)
+            {
+                var statusText = item.Status switch { EnrollmentState.Pending => "Chờ duyệt", EnrollmentState.Approved => "Đã duyệt", _ => "Đã hủy" };
+                <tr>
+                    <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
+                    <td>@item.Course.Name</td>
+                    <td>@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

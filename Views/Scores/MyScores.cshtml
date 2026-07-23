@@ -1,0 +1,16 @@
+@model IEnumerable<Score>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Kết quả học tập";
+}
+<section class="page-heading"><div><p class="section-kicker">Học viên</p><h1>Kết quả học tập</h1><p>Theo dõi điểm kiểm tra và nhận xét từ giáo viên.</p></div></section>
+<div class="record-grid">
+@foreach (var item in Model)
+{
+    <article class="record-card">
+        <div class="section-title-row"><div><span class="badge text-bg-light">@item.CourseClass.Code</span><h2>@item.CourseClass.Course.Name</h2></div><span class="result-badge @(item.AverageScore >= 5 ? "passed" : "failed")">@item.Result</span></div>
+        <div class="score-summary"><div><span>Giữa kỳ</span><strong>@item.MidtermScore.ToString("0.0")</strong></div><div><span>Cuối kỳ</span><strong>@item.FinalScore.ToString("0.0")</strong></div><div><span>Trung bình</span><strong>@item.AverageScore.ToString("0.0")</strong></div></div>
+        <div class="teacher-comment"><span>Nhận xét của giáo viên</span><p>@(string.IsNullOrWhiteSpace(item.Comment) ? "Chưa có nhận xét." : item.Comment)</p></div>
+    </article>
+}
+</div>

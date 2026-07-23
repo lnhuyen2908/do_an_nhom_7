@@ -1,0 +1,12 @@
+@model IEnumerable<CourseLecture>
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Bài giảng";
+}
+<section class="page-heading"><div><p class="section-kicker">Học viên</p><h1>Bài giảng và tài liệu</h1><p>Tài liệu của các khóa học đã được duyệt.</p></div></section>
+<div class="resource-grid">
+@foreach(var item in Model)
+{
+    <article class="resource-card"><span class="badge text-bg-light">@item.Course.Code</span><h2>@item.Title</h2><p>@item.Course.Name</p><p>Giáo viên: <strong>@item.Teacher.FullName</strong></p><small>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm") · @item.FileName</small><div class="mt-3"><a class="btn btn-primary" href="@item.FileUrl" target="_blank" rel="noopener">Mở tài liệu</a></div></article>
+}
+</div>

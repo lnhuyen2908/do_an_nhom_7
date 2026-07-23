@@ -1,0 +1,78 @@
+@model IEnumerable<Course>
+@{
+    ViewData["Title"] = "Danh sách khóa học";
+    var canManage = User.IsInRole("Admin") || User.IsInRole("Staff");
+}
+
+@if (canManage)
+{
+    <h1>Quản lý khóa học</h1>
+    <p>
+        <a class="btn btn-primary" asp-action="Create">Thêm mới</a>
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã khóa học</th>
+                <th>Tên khóa học</th>
+                <th>Trình độ</th>
+                <th>Học phí</th>
+                <th>Thời lượng</th>
+                <th>Mô tả</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Code</td>
+                <td>@item.Name</td>
+                <td>@item.Level</td>
+                <td>@item.Tuition.ToString("N0") VND</td>
+                <td>@item.Duration</td>
+                <td>@item.Description</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="page-head">
+        <div>
+            <p class="eyebrow">Chương trình đào tạo</p>
+            <h1>Khóa học phù hợp với mục tiêu của bạn</h1>
+        </div>
+    </div>
+    <form method="get" class="content-card filter-bar">
+        <label>Tìm khóa học<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tên hoặc mã khóa học" /></label>
+        <label>Trình độ<select class="form-select" name="level"><option value="">Tất cả trình độ</option>@foreach (var item in (IEnumerable<string>)(ViewBag.Levels ?? new List<string>())){<option value="@item" selected="@(ViewBag.Level == item)">@item</option>}</select></label>
+        <button class="btn btn-primary">Tìm kiếm</button>
+    </form>
+    <div class="course-grid">
+        @foreach (var course in Model)
+        {
+            <article class="course-card">
+                <img class="course-card-image" src="@course.ImageUrl"
+                     alt="@course.Name" loading="lazy" />
+                <div class="course-card-body">
+                    <span class="badge text-bg-light">@course.Level</span>
+                    <h3>@course.Name</h3>
+                    <p>@course.Description</p>
+                    <div class="course-meta">
+                        <span>@course.Duration</span>
+                        <strong>@course.Tuition.ToString("N0") VND</strong>
+                    </div>
+                    <a class="btn btn-sm btn-outline-primary"
+                       asp-action="Details" asp-route-id="@course.Id">Chi tiết</a>
+                </div>
+            </article>
+        }
+    </div>
+}

@@ -1,0 +1,15 @@
+@model CourseClass
+@using web_do_an1.Models
+@{
+    ViewData["Title"] = "Danh sách học viên";
+}
+<section class="page-heading">
+    <div><p class="section-kicker">@Model.Code</p><h1>@Model.Course.Name</h1><p>@Model.Schedule · @Model.Room</p></div>
+    <div class="action-strip"><a class="btn btn-primary" asp-controller="AttendanceRecords" asp-action="Manage" asp-route-classId="@Model.Id">Điểm danh</a><a class="btn btn-primary" asp-controller="Scores" asp-action="Manage" asp-route-classId="@Model.Id">Nhập điểm</a></div>
+</section>
+<section class="content-card">
+    <h2>Danh sách học viên (@Model.Enrollments.Count)</h2>
+    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Mã học viên</th><th>Họ và tên</th><th>Email</th><th>Số điện thoại</th></tr></thead><tbody>
+    @foreach (var item in Model.Enrollments.OrderBy(x => x.Student.Code)){<tr><td>@item.Student.Code</td><td><strong>@item.Student.FullName</strong></td><td>@item.Student.Email</td><td>@item.Student.Phone</td></tr>}
+    </tbody></table></div>
+</section>

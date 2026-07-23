@@ -1,0 +1,22 @@
+@model UserAccount
+@{
+    ViewData["Title"] = "Chi tiết tài khoản";
+}
+
+<div class="page-head">
+    <h1>Chi tiết tài khoản</h1>
+    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Sửa</a>
+</div>
+<div class="detail-main">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Họ tên</dt><dd class="col-sm-9">@Model.FullName</dd>
+        <dt class="col-sm-3">Tên đăng nhập</dt><dd class="col-sm-9">@Model.UserName</dd>
+        <dt class="col-sm-3">Email</dt><dd class="col-sm-9">@Model.Email</dd>
+        <dt class="col-sm-3">Số điện thoại</dt><dd class="col-sm-9">@Model.Phone</dd>
+        <dt class="col-sm-3">Vai trò</dt><dd class="col-sm-9">@Model.Role.DisplayName</dd>
+        <dt class="col-sm-3">Liên kết</dt><dd class="col-sm-9">@(Model.Student?.FullName ?? Model.Teacher?.FullName ?? "—")</dd>
+        <dt class="col-sm-3">Hoạt động</dt><dd class="col-sm-9">@(Model.IsActive ? "Có" : "Không")</dd>
+        <dt class="col-sm-3">Ngày tạo</dt><dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+    </dl>
+</div>
+<a class="btn btn-outline-secondary mt-3" asp-action="Index">Quay lại</a>

@@ -1,0 +1,14 @@
+@model string
+@{
+    ViewData["Title"] = "Lỗi";
+}
+
+<div class="empty-state">
+    <h1>Đã xảy ra lỗi</h1>
+    <p>Hệ thống không thể hoàn thành yêu cầu. Vui lòng thử lại.</p>
+    @if (!string.IsNullOrWhiteSpace(Model))
+    {
+        <p><strong>Mã yêu cầu:</strong> <code>@Model</code></p>
+    }
+    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Về trang chủ</a>
+</div>

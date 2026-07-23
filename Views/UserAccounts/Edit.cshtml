@@ -1,0 +1,63 @@
+@model UserAccount
+@{
+    ViewData["Title"] = "Sửa tài khoản";
+}
+
+<div class="page-head"><h1>Sửa tài khoản</h1></div>
+<div class="form-card form-wide">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="UserName" class="form-label"></label>
+                <input asp-for="UserName" class="form-control" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Password" class="form-label">Mật khẩu mới</label>
+                <input asp-for="Password" class="form-control" placeholder="Để trống nếu không đổi" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="RoleId" class="form-label"></label>
+                <select asp-for="RoleId" class="form-select" asp-items="ViewBag.RoleId"></select>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Phone" class="form-label"></label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="StudentId" class="form-label"></label>
+                <select asp-for="StudentId" class="form-select" asp-items="ViewBag.StudentId">
+                    <option value="">Không liên kết</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="TeacherId" class="form-label"></label>
+                <select asp-for="TeacherId" class="form-select" asp-items="ViewBag.TeacherId">
+                    <option value="">Không liên kết</option>
+                </select>
+            </div>
+            <div class="col-12 form-check ms-2">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+        </div>
+        <div class="action-strip mt-4">
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a>
+        </div>
+    </form>
+</div>

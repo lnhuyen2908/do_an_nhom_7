@@ -1,0 +1,108 @@
+@model Course
+@{
+    ViewData["Title"] = Model.Name;
+    var canManage = User.IsInRole("Admin") || User.IsInRole("Staff");
+    var seats = ViewBag.ClassSeats as IDictionary<int, int> ?? new Dictionary<int, int>();
+    var isSaved = ViewBag.IsSaved is true;
+    var hasEnrollment = ViewBag.HasEnrollment is true;
+}
+
+<section class="course-detail-hero">
+    <article class="detail-main">
+        <img class="course-detail-image" src="@Model.ImageUrl" alt="@Model.Name" />
+        <div class="course-detail-body">
+            <span class="badge text-bg-light">@Model.Level</span>
+            <h1>@Model.Name</h1>
+            <p>@Model.Description</p>
+            <div class="course-info-grid">
+                <div>
+                    <span>Mã khóa học</span>
+                    <strong>@Model.Code</strong>
+                </div>
+                <div>
+                    <span>Thời lượng</span>
+                    <strong>@Model.Duration</strong>
+                </div>
+                <div>
+                    <span>Học phí</span>
+                    <strong>@Model.Tuition.ToString("N0") VND</strong>
+                </div>
+            </div>
+            <div class="action-strip">
+                <a class="btn btn-outline-secondary" asp-action="Index">Quay lại danh sách</a>
+                @if (canManage)
+                {
+                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Chỉnh sửa</a>
+                }
+                else if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a class="btn btn-primary" asp-controller="Auth" asp-action="Login">Đăng nhập để tiếp tục</a>
+                }
+                else if (User.IsInRole("Student"))
+                {
+                    @if (!isSaved)
+                    {
+                        <form asp-action="Save" method="post">
+                            <input type="hidden" name="courseId" value="@Model.Id" />
+                            <button class="btn btn-outline-primary" type="submit">Lưu khóa học</button>
+                        </form>
+                    }
+                    @if (hasEnrollment)
+                    {
+                        <span class="status-pill status-approved">Đã đăng ký</span>
+                    }
+                }
+            </div>
+        </div>
+    </article>
+
+    <aside class="side-panel class-panel">
+        <p class="section-kicker">Thông tin khóa học</p>
+        <h2>Bạn sẽ nhận được gì?</h2>
+        <div class="mini-row">
+            <strong>Lộ trình rõ ràng</strong>
+            <span>Nội dung được xây dựng theo đúng trình độ @Model.Level.</span>
+        </div>
+        <div class="mini-row">
+            <strong>Thực hành thường xuyên</strong>
+            <span>Bài tập và hoạt động giúp củng cố kiến thức sau mỗi buổi học.</span>
+        </div>
+        <div class="mini-row">
+            <strong>Giáo viên đồng hành</strong>
+            <span>Được hướng dẫn và nhận phản hồi trong suốt khóa học.</span>
+        </div>
+    </aside>
+</section>
+
+<section class="content-card">
+    <div class="section-title-row">
+        <div><p class="section-kicker">Lịch khai giảng</p><h2>Chọn lớp phù hợp</h2></div>
+    </div>
+    @if (Model.CourseClasses.Count == 0)
+    {
+        <div class="empty-state">Khóa học chưa có lớp khai giảng.</div>
+    }
+    else
+    {
+        <div class="class-choice-grid">
+        @foreach (var item in Model.CourseClasses.OrderBy(x => x.StartDate))
+        {
+            var occupied = seats.TryGetValue(item.Id, out var value) ? value : 0;
+            <article class="class-choice-card">
+                <div><span class="badge text-bg-light">@item.Code</span><h3>@item.Schedule</h3></div>
+                <p>Giáo viên: <strong>@item.Teacher.FullName</strong></p>
+                <p>Phòng: @item.Room · Bắt đầu: @item.StartDate.ToString("dd/MM/yyyy")</p>
+                <p>Sĩ số: @occupied/@item.Capacity</p>
+                @if (User.IsInRole("Student") && !hasEnrollment)
+                {
+                    <form asp-action="Register" method="post">
+                        <input type="hidden" name="courseId" value="@Model.Id" />
+                        <input type="hidden" name="courseClassId" value="@item.Id" />
+                        <button class="btn btn-primary" type="submit" disabled="@(occupied >= item.Capacity)">Đăng ký lớp này</button>
+                    </form>
+                }
+            </article>
+        }
+        </div>
+    }
+</section>
