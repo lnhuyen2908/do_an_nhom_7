@@ -101,6 +101,80 @@ public class AttendanceRecordsController : Controller
         return RedirectToAction(nameof(Manage), new { classId, studyDate });
     }
 
+    [Authorize(Roles = "Teacher")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveAll(
+        int classId, DateTime studyDate, int[] studentIds)
+    {
+        var teacherId = ClaimId("TeacherId");
+        var canManageClass = teacherId.HasValue
+            && await _context.CourseClasses.AnyAsync(x =>
+                x.Id == classId && x.TeacherId == teacherId.Value);
+        if (!canManageClass)
+        {
+            return NotFound();
+        }
+
+        studentIds = studentIds.Distinct().ToArray();
+        var approvedStudentIds = await _context.Enrollments.AsNoTracking()
+            .Where(x => x.CourseClassId == classId
+                && x.Status == EnrollmentState.Approved)
+            .Select(x => x.StudentId)
+            .ToListAsync();
+        if (studentIds.Length == 0 || studentIds.Except(approvedStudentIds).Any())
+        {
+            return NotFound();
+        }
+
+        var notes = new Dictionary<int, string>();
+        foreach (var studentId in studentIds)
+        {
+            var note = Request.Form[$"note_{studentId}"].ToString().Trim();
+            if (note.Length > 500)
+            {
+                TempData["ErrorMessage"] = "Ghi chú không được vượt quá 500 ký tự.";
+                return RedirectToAction(nameof(Manage), new { classId, studyDate });
+            }
+
+            notes[studentId] = note;
+        }
+
+        studyDate = studyDate.Date;
+        var records = await _context.AttendanceRecords
+            .Where(x => x.CourseClassId == classId
+                && x.StudyDate == studyDate
+                && studentIds.Contains(x.StudentId))
+            .ToListAsync();
+
+        foreach (var studentId in studentIds)
+        {
+            var isPresent = bool.TryParse(
+                Request.Form[$"isPresent_{studentId}"].ToString(),
+                out var present)
+                ? present
+                : true;
+            var record = records.FirstOrDefault(x => x.StudentId == studentId);
+            if (record is null)
+            {
+                record = new AttendanceRecord
+                {
+                    CourseClassId = classId,
+                    StudentId = studentId,
+                    StudyDate = studyDate
+                };
+                _context.AttendanceRecords.Add(record);
+            }
+
+            record.IsPresent = isPresent;
+            record.Note = notes[studentId];
+        }
+
+        await _context.SaveChangesAsync();
+        TempData["SuccessMessage"] = "Đã lưu điểm danh cho cả lớp.";
+        return RedirectToAction(nameof(Manage), new { classId, studyDate });
+    }
+
     private int? ClaimId(string type)
     {
         return int.TryParse(User.FindFirstValue(type), out var id) ? id : null;

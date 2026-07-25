@@ -60,6 +60,13 @@ public class PaymentsController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
+            if (paidAmount > 0 && paidAmount < payment.Amount)
+            {
+                TempData["ErrorMessage"] =
+                    $"Hệ thống chỉ ghi nhận chưa thanh toán hoặc đã thanh toán. Vui lòng nhập 0 hoặc {payment.Amount:N0} đồng.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var difference = paidAmount - payment.PaidAmount;
             payment.PaidAmount = paidAmount;
             payment.PaymentMethod = paymentMethod;
@@ -138,6 +145,13 @@ public class PaymentsController : Controller
                 return RedirectToAction(nameof(MyPayments));
             }
 
+            if (amount != remaining)
+            {
+                TempData["ErrorMessage"] =
+                    $"Hệ thống không hỗ trợ đóng thiếu học phí. Vui lòng thanh toán đủ {remaining:N0} đồng.";
+                return RedirectToAction(nameof(MyPayments));
+            }
+
             payment.PaidAmount += amount;
             payment.PaymentMethod = paymentMethod;
             payment.PaidDate = DateTime.Today;
@@ -165,7 +179,7 @@ public class PaymentsController : Controller
         {
             return PaymentState.Unpaid;
         }
-        return paid >= amount ? PaymentState.Paid : PaymentState.PartiallyPaid;
+        return paid >= amount ? PaymentState.Paid : PaymentState.Unpaid;
     }
 
     private int? CurrentStudentId()

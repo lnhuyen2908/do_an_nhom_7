@@ -11,13 +11,15 @@
             <tbody>
             @foreach (var item in Model)
             {
-                var statusText = item.Status switch { PaymentState.Unpaid => "Chưa thanh toán", PaymentState.PartiallyPaid => "Thanh toán một phần", _ => "Đã thanh toán" };
+                var isPaid = item.PaidAmount >= item.Amount || item.Status == PaymentState.Paid;
+                var statusText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
+                var statusCss = isPaid ? "paid" : "unpaid";
                 <tr>
                     <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
                     <td>@item.Enrollment.Course.Name</td>
                     <td>@item.Amount.ToString("N0") đ</td>
                     <td>@item.PaidAmount.ToString("N0") đ</td>
-                    <td><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></td>
+                    <td><span class="status-pill status-@statusCss">@statusText</span></td>
                     <td>
                         <form asp-action="RecordPayment" method="post" class="inline-management-form">
                             <input type="hidden" name="id" value="@item.Id" />

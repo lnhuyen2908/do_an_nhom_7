@@ -1698,11 +1698,6 @@ body {
 }
 
 .status-pending,
-.status-partiallypaid {
-  background: #fef3c7;
-  color: #92400e;
-}
-
 .status-cancelled,
 .status-unpaid,
 .result-badge.failed {
@@ -1716,6 +1711,23 @@ body {
   display: flex;
   gap: 8px;
   align-items: end;
+}
+
+.attendance-status-options {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-width: 150px;
+}
+
+.attendance-status-options .form-check {
+  margin-bottom: 0;
+}
+
+.attendance-bulk-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
 }
 
 .inline-management-form .form-control,
@@ -1908,6 +1920,10 @@ body {
   .attendance-entry-form {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .attendance-status-options {
+    min-width: 0;
   }
 
   .dashboard-grid,

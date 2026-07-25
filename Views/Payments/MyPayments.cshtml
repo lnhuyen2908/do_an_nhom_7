@@ -8,9 +8,11 @@
 @foreach (var item in Model)
 {
     var remaining = item.Amount - item.PaidAmount;
-    var statusText = item.Status switch { PaymentState.Unpaid => "Chưa thanh toán", PaymentState.PartiallyPaid => "Thanh toán một phần", _ => "Đã thanh toán" };
+    var isPaid = item.PaidAmount >= item.Amount || item.Status == PaymentState.Paid;
+    var statusText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
+    var statusCss = isPaid ? "paid" : "unpaid";
     <article class="record-card">
-        <div class="section-title-row"><div><span class="badge text-bg-light">@item.Enrollment.Course.Code</span><h2>@item.Enrollment.Course.Name</h2></div><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></div>
+        <div class="section-title-row"><div><span class="badge text-bg-light">@item.Enrollment.Course.Code</span><h2>@item.Enrollment.Course.Name</h2></div><span class="status-pill status-@statusCss">@statusText</span></div>
         <div class="course-info-grid">
             <div><span>Phải đóng</span><strong>@item.Amount.ToString("N0") đ</strong></div>
             <div><span>Đã đóng</span><strong>@item.PaidAmount.ToString("N0") đ</strong></div>

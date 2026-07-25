@@ -170,7 +170,6 @@ public class AuthController : Controller
     public async Task<IActionResult> Login(
         string? userName,
         string? password,
-        bool rememberMe,
         string? returnUrl)
     {
         userName = userName?.Trim() ?? string.Empty;
@@ -223,7 +222,7 @@ public class AuthController : Controller
             principal,
             new AuthenticationProperties
             {
-                IsPersistent = rememberMe,
+                IsPersistent = false,
                 AllowRefresh = true
             });
 

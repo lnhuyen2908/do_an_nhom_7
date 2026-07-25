@@ -7,9 +7,6 @@ public enum PaymentState
     [Display(Name = "Chưa thanh toán")]
     Unpaid,
 
-    [Display(Name = "Thanh toán một phần")]
-    PartiallyPaid,
-
     [Display(Name = "Đã thanh toán")]
     Paid
 }

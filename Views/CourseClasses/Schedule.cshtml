@@ -2,8 +2,9 @@
 @using web_do_an1.Models
 @{
     ViewData["Title"] = "Lịch khai giảng";
+    var isTeacherSchedule = ViewBag.IsTeacherSchedule is true;
 }
-<section class="page-heading"><div><p class="section-kicker">Lịch đào tạo</p><h1>Lịch khai giảng</h1><p>Tìm lớp học phù hợp theo khóa học, hình thức và thời gian.</p></div></section>
+<section class="page-heading"><div><p class="section-kicker">Lịch đào tạo</p><h1>Lịch khai giảng</h1><p>@(isTeacherSchedule ? "Các lớp khai giảng do bạn phụ trách." : "Tìm lớp học phù hợp theo khóa học, hình thức và thời gian.")</p></div></section>
 <section class="content-card">
     <form method="get" class="filter-bar">
         <label>Tìm lớp hoặc khóa học<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tên khóa học, mã lớp..." /></label>

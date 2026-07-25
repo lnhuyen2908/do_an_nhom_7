@@ -41,6 +41,18 @@ public class CourseClassesController : Controller
             query = query.Where(x => !x.Room.Contains("Online"));
         }
 
+        if (User.IsInRole("Teacher"))
+        {
+            var teacherId = ClaimId("TeacherId");
+            if (!teacherId.HasValue)
+            {
+                return Forbid();
+            }
+
+            query = query.Where(x => x.TeacherId == teacherId.Value);
+            ViewBag.IsTeacherSchedule = true;
+        }
+
         ViewBag.Keyword = keyword;
         ViewBag.Mode = mode;
         return View(await query.OrderBy(x => x.StartDate).ThenBy(x => x.Code).ToListAsync());

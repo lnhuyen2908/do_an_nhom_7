@@ -292,7 +292,6 @@ public class DatabaseSeeder
                 var paidAmount = (index % 3) switch
                 {
                     0 => courseClass.Course.Tuition,
-                    1 => courseClass.Course.Tuition / 2,
                     _ => 0
                 };
                 _context.Payments.Add(new Payment
@@ -303,9 +302,7 @@ public class DatabaseSeeder
                     PaidAmount = paidAmount,
                     Status = paidAmount <= 0
                         ? PaymentState.Unpaid
-                        : paidAmount >= courseClass.Course.Tuition
-                            ? PaymentState.Paid
-                            : PaymentState.PartiallyPaid,
+                        : PaymentState.Paid,
                     PaymentMethod = index % 2 == 0
                         ? PaymentMethod.BankTransfer
                         : PaymentMethod.Cash,
