@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -135,6 +135,13 @@ public class PaymentsController : Controller
             if (payment is null)
             {
                 return NotFound();
+            }
+
+            if (payment.Status == PaymentState.Paid)
+            {
+                TempData["ErrorMessage"] =
+                    "Học phí này đã được thanh toán.";
+                return RedirectToAction(nameof(MyPayments));
             }
 
             var remaining = payment.Amount - payment.PaidAmount;

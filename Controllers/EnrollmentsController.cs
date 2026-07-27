@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -138,7 +138,9 @@ public class EnrollmentsController : Controller
             : null;
         if (enrollment is null)
         {
-            return NotFound();
+            TempData["ErrorMessage"] =
+         "Không thể hủy đăng ký này.";
+            return RedirectToAction(nameof(MyEnrollments));
         }
 
         enrollment.Status = EnrollmentState.Cancelled;
