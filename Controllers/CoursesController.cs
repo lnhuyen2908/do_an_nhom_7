@@ -138,16 +138,6 @@ public class CoursesController : Controller
             };
             _context.Enrollments.Add(enrollment);
             await _context.SaveChangesAsync();
-
-            _context.Payments.Add(new Payment
-            {
-                StudentId = studentId.Value,
-                EnrollmentId = enrollment.Id,
-                Amount = course.Tuition,
-                Status = PaymentState.Unpaid,
-                PaymentMethod = PaymentMethod.Cash
-            });
-            await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
             TempData["SuccessMessage"] = "Đăng ký thành công. Hồ sơ đang chờ nhân viên đào tạo duyệt.";

@@ -106,7 +106,8 @@ public class PaymentsController : Controller
         }
 
         return View(await _context.Payments.AsNoTracking()
-            .Where(x => x.StudentId == studentId.Value)
+            .Where(x => x.StudentId == studentId.Value
+                && x.Enrollment.Status == EnrollmentState.Approved)
             .Include(x => x.Enrollment).ThenInclude(x => x.Course)
             .Include(x => x.PaymentTransactions)
             .OrderBy(x => x.Status)
@@ -131,7 +132,9 @@ public class PaymentsController : Controller
                 await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
             var payment = await _context.Payments.FirstOrDefaultAsync(x =>
-                x.Id == id && x.StudentId == studentId.Value);
+                x.Id == id
+                && x.StudentId == studentId.Value
+                && x.Enrollment.Status == EnrollmentState.Approved);
             if (payment is null)
             {
                 return NotFound();
