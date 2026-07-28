@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +18,20 @@ namespace web_do_an1.Controllers
     [Authorize(Roles = "Admin,Staff")]
     public class CourseLecturesController : Controller
     {
-        private readonly EnglishCenterDbContext _context;
+        private const long MaxLectureFileSize = 20 * 1024 * 1024;
+        private const string LectureUploadFolder = "uploads/lectures";
+        private static readonly HashSet<string> AllowedLectureExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".zip"
+        };
 
-        public CourseLecturesController(EnglishCenterDbContext context)
+        private readonly EnglishCenterDbContext _context;
+        private readonly IWebHostEnvironment _environment;
+
+        public CourseLecturesController(EnglishCenterDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         // GET: CourseLectures
@@ -62,15 +74,24 @@ namespace web_do_an1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CourseId,TeacherId,Title,FileName,FileUrl,UploadedAt")] CourseLecture courseLecture)
+        public async Task<IActionResult> Create(int courseId, int teacherId, string? title, IFormFile? lectureFile)
         {
-            NormalizeLecture(courseLecture);
-            ModelState.Clear();
-            TryValidateModel(courseLecture);
-            await ValidateLectureAsync(courseLecture);
+            var courseLecture = new CourseLecture
+            {
+                CourseId = courseId,
+                TeacherId = teacherId,
+                Title = title?.Trim() ?? string.Empty,
+                UploadedAt = DateTime.Now
+            };
+
+            await ValidateLectureSelectionAsync(courseLecture.CourseId, courseLecture.TeacherId);
+            ValidateLectureTitle(courseLecture.Title);
+            ValidateLectureFile(lectureFile, required: true);
 
             if (ModelState.IsValid)
             {
+                courseLecture.FileName = Path.GetFileName(lectureFile!.FileName).Trim();
+                courseLecture.FileUrl = await SaveLectureFileAsync(lectureFile, courseLecture.FileName);
                 _context.Add(courseLecture);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Đã thêm bài giảng.";
@@ -104,23 +125,35 @@ namespace web_do_an1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CourseId,TeacherId,Title,FileName,FileUrl,UploadedAt")] CourseLecture courseLecture)
+        public async Task<IActionResult> Edit(
+            int id, int courseId, int teacherId, string? title, DateTime uploadedAt, IFormFile? lectureFile)
         {
-            if (id != courseLecture.Id)
+            var courseLecture = await _context.CourseLectures.FindAsync(id);
+            if (courseLecture is null)
             {
                 return NotFound();
             }
 
-            NormalizeLecture(courseLecture);
-            ModelState.Clear();
-            TryValidateModel(courseLecture);
-            await ValidateLectureAsync(courseLecture);
+            courseLecture.CourseId = courseId;
+            courseLecture.TeacherId = teacherId;
+            courseLecture.Title = title?.Trim() ?? string.Empty;
+            courseLecture.UploadedAt = uploadedAt == default ? courseLecture.UploadedAt : uploadedAt;
+
+            await ValidateLectureSelectionAsync(courseLecture.CourseId, courseLecture.TeacherId);
+            ValidateLectureTitle(courseLecture.Title);
+            ValidateLectureFile(lectureFile, required: false);
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(courseLecture);
+                    if (lectureFile is { Length: > 0 })
+                    {
+                        DeleteLectureFile(courseLecture.FileUrl);
+                        courseLecture.FileName = Path.GetFileName(lectureFile.FileName).Trim();
+                        courseLecture.FileUrl = await SaveLectureFileAsync(lectureFile, courseLecture.FileName);
+                    }
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -170,6 +203,7 @@ namespace web_do_an1.Controllers
             var courseLecture = await _context.CourseLectures.FindAsync(id);
             if (courseLecture != null)
             {
+                DeleteLectureFile(courseLecture.FileUrl);
                 _context.CourseLectures.Remove(courseLecture);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Đã xóa bài giảng.";
@@ -203,7 +237,7 @@ namespace web_do_an1.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLecture(
-            int courseId, string? title, string? fileName, string? fileUrl)
+            int courseId, string? title, IFormFile? lectureFile)
         {
             if (!User.IsInRole("Teacher")
                 || !int.TryParse(User.FindFirstValue("TeacherId"), out var teacherId))
@@ -219,29 +253,39 @@ namespace web_do_an1.Controllers
             }
 
             title = title?.Trim() ?? string.Empty;
-            fileName = fileName?.Trim() ?? string.Empty;
-            fileUrl = fileUrl?.Trim() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(title)
-                || string.IsNullOrWhiteSpace(fileName)
-                || string.IsNullOrWhiteSpace(fileUrl))
+            if (string.IsNullOrWhiteSpace(title) || lectureFile is null || lectureFile.Length == 0)
             {
-                TempData["ErrorMessage"] = "Vui lòng nhập đầy đủ thông tin bài giảng.";
+                TempData["ErrorMessage"] = "Vui lòng nhập tiêu đề và chọn tệp bài giảng.";
                 return RedirectToAction(nameof(MyLectures));
             }
 
-            if (title.Length > 200 || fileName.Length > 255 || fileUrl.Length > 500)
+            var originalFileName = Path.GetFileName(lectureFile.FileName).Trim();
+            var extension = Path.GetExtension(originalFileName);
+            if (title.Length > 200 || originalFileName.Length > 255)
             {
-                TempData["ErrorMessage"] =
-                    "Thông tin bài giảng quá dài. Vui lòng rút gọn tiêu đề, tên tệp hoặc đường dẫn.";
+                TempData["ErrorMessage"] = "Tiêu đề hoặc tên tệp quá dài. Vui lòng rút gọn trước khi tải lên.";
                 return RedirectToAction(nameof(MyLectures));
             }
 
+            if (!AllowedLectureExtensions.Contains(extension))
+            {
+                TempData["ErrorMessage"] = "Chỉ hỗ trợ các tệp PDF, Word, PowerPoint, Excel, TXT hoặc ZIP.";
+                return RedirectToAction(nameof(MyLectures));
+            }
+
+            if (lectureFile.Length > MaxLectureFileSize)
+            {
+                TempData["ErrorMessage"] = "Tệp bài giảng không được vượt quá 20 MB.";
+                return RedirectToAction(nameof(MyLectures));
+            }
+
+            var fileUrl = await SaveLectureFileAsync(lectureFile, originalFileName);
             _context.CourseLectures.Add(new CourseLecture
             {
                 CourseId = courseId,
                 TeacherId = teacherId,
                 Title = title,
-                FileName = fileName,
+                FileName = originalFileName,
                 FileUrl = fileUrl,
                 UploadedAt = DateTime.Now
             });
@@ -267,6 +311,7 @@ namespace web_do_an1.Controllers
             {
                 return NotFound();
             }
+            DeleteLectureFile(lecture.FileUrl);
             _context.CourseLectures.Remove(lecture);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Đã xóa bài giảng.";
@@ -297,24 +342,93 @@ namespace web_do_an1.Controllers
             return _context.CourseLectures.Any(e => e.Id == id);
         }
 
-        private static void NormalizeLecture(CourseLecture lecture)
+        private void ValidateLectureTitle(string title)
         {
-            lecture.Title = lecture.Title.Trim();
-            lecture.FileName = lecture.FileName.Trim();
-            lecture.FileUrl = lecture.FileUrl.Trim();
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                ModelState.AddModelError(nameof(CourseLecture.Title), "Vui lòng nhập tiêu đề bài giảng.");
+            }
+            else if (title.Length > 200)
+            {
+                ModelState.AddModelError(nameof(CourseLecture.Title), "Tiêu đề bài giảng không được vượt quá 200 ký tự.");
+            }
         }
 
-        private async Task ValidateLectureAsync(CourseLecture lecture)
+        private void ValidateLectureFile(IFormFile? lectureFile, bool required)
         {
-            if (!await _context.Courses.AnyAsync(x => x.Id == lecture.CourseId))
+            if (lectureFile is null || lectureFile.Length == 0)
+            {
+                if (required)
+                {
+                    ModelState.AddModelError("lectureFile", "Vui lòng chọn tệp bài giảng.");
+                }
+                return;
+            }
+
+            var originalFileName = Path.GetFileName(lectureFile.FileName).Trim();
+            var extension = Path.GetExtension(originalFileName);
+            if (originalFileName.Length > 255)
+            {
+                ModelState.AddModelError("lectureFile", "Tên tệp không được vượt quá 255 ký tự.");
+            }
+
+            if (!AllowedLectureExtensions.Contains(extension))
+            {
+                ModelState.AddModelError("lectureFile", "Chỉ hỗ trợ các tệp PDF, Word, PowerPoint, Excel, TXT hoặc ZIP.");
+            }
+
+            if (lectureFile.Length > MaxLectureFileSize)
+            {
+                ModelState.AddModelError("lectureFile", "Tệp bài giảng không được vượt quá 20 MB.");
+            }
+        }
+
+        private async Task ValidateLectureSelectionAsync(int courseId, int teacherId)
+        {
+            if (!await _context.Courses.AnyAsync(x => x.Id == courseId))
             {
                 ModelState.AddModelError(nameof(CourseLecture.CourseId), "Vui lòng chọn khóa học hợp lệ.");
             }
 
-            if (!await _context.Teachers.AnyAsync(x => x.Id == lecture.TeacherId))
+            if (!await _context.Teachers.AnyAsync(x => x.Id == teacherId))
             {
                 ModelState.AddModelError(nameof(CourseLecture.TeacherId), "Vui lòng chọn giáo viên hợp lệ.");
             }
+        }
+
+        private async Task<string> SaveLectureFileAsync(IFormFile file, string originalFileName)
+        {
+            var uploadRoot = Path.Combine(_environment.WebRootPath, LectureUploadFolder.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(uploadRoot);
+
+            var extension = Path.GetExtension(originalFileName);
+            var safeFileName = $"{Guid.NewGuid():N}{extension}";
+            var filePath = Path.Combine(uploadRoot, safeFileName);
+            await using var stream = System.IO.File.Create(filePath);
+            await file.CopyToAsync(stream);
+
+            return $"/{LectureUploadFolder}/{safeFileName}";
+        }
+
+        private void DeleteLectureFile(string fileUrl)
+        {
+            if (string.IsNullOrWhiteSpace(fileUrl)
+                || !fileUrl.StartsWith($"/{LectureUploadFolder}/", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var fileName = Path.GetFileName(fileUrl);
+            var uploadRoot = Path.Combine(_environment.WebRootPath, LectureUploadFolder.Replace('/', Path.DirectorySeparatorChar));
+            var filePath = Path.GetFullPath(Path.Combine(uploadRoot, fileName));
+            var safeRoot = Path.GetFullPath(uploadRoot);
+            if (!filePath.StartsWith(safeRoot, StringComparison.OrdinalIgnoreCase)
+                || !System.IO.File.Exists(filePath))
+            {
+                return;
+            }
+
+            System.IO.File.Delete(filePath);
         }
     }
 }
