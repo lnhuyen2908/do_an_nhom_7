@@ -5,6 +5,112 @@
     var seats = ViewBag.ClassSeats as IDictionary<int, int> ?? new Dictionary<int, int>();
     var isSaved = ViewBag.IsSaved is true;
     var hasEnrollment = ViewBag.HasEnrollment is true;
+    var courseName = Model.Name.ToLowerInvariant();
+    var courseFocus = "nền tảng tiếng Anh";
+    var outcomeText = "tự tin sử dụng tiếng Anh trong học tập, công việc và giao tiếp hằng ngày";
+    var practiceText = "luyện nghe, nói, đọc, viết qua bài tập theo chủ đề";
+    var projectText = "hoàn thành bài đánh giá cuối khóa và nhận định hướng học tiếp";
+    var curriculum = new[]
+    {
+        new { Title = "Khởi động và đánh giá đầu vào", Description = "Xác định trình độ hiện tại, ôn lại kiến thức nền và thống nhất mục tiêu học tập." },
+        new { Title = "Xây nền kỹ năng trọng tâm", Description = "Học từ vựng, mẫu câu, ngữ pháp và chiến lược học phù hợp với trình độ của khóa." },
+        new { Title = "Thực hành theo tình huống", Description = "Luyện tập trên bài tập, hoạt động nhóm và phản hồi trực tiếp từ giáo viên." },
+        new { Title = "Tổng ôn và định hướng tiếp theo", Description = "Rà soát tiến bộ, hoàn thành bài kiểm tra cuối khóa và nhận lộ trình sau khóa học." }
+    };
+
+    if (courseName.Contains("ielts"))
+    {
+        courseFocus = "bốn kỹ năng IELTS";
+        outcomeText = "nắm chiến lược làm bài, mở rộng từ vựng học thuật và cải thiện band điểm mục tiêu";
+        practiceText = "luyện Listening, Reading, Writing, Speaking theo dạng đề IELTS";
+        projectText = "hoàn thành bài mock test và nhận nhận xét chi tiết theo từng kỹ năng";
+        curriculum = new[]
+        {
+            new { Title = "Chẩn đoán band hiện tại", Description = "Làm bài kiểm tra nhanh để xác định điểm mạnh, điểm yếu và mục tiêu band phù hợp." },
+            new { Title = "Chiến lược Listening và Reading", Description = "Luyện bắt keyword, xử lý bẫy thông tin, quản lý thời gian và đọc hiểu học thuật." },
+            new { Title = "Writing và Speaking có phản hồi", Description = "Xây cấu trúc bài viết, phát triển ý, sửa lỗi diễn đạt và luyện nói theo chủ đề." },
+            new { Title = "Mock test và kế hoạch tăng band", Description = "Thi thử cuối khóa, phân tích lỗi thường gặp và nhận lộ trình luyện tiếp." }
+        };
+    }
+    else if (courseName.Contains("toeic"))
+    {
+        courseFocus = "kỹ năng làm bài TOEIC";
+        outcomeText = "nắm cấu trúc đề TOEIC, tăng tốc độ xử lý câu hỏi và củng cố ngữ pháp thường gặp";
+        practiceText = "luyện Listening và Reading theo từng part của đề TOEIC";
+        projectText = "hoàn thành đề tổng hợp và nhận chiến lược ôn tập theo mục tiêu điểm";
+        curriculum = new[]
+        {
+            new { Title = "Nắm cấu trúc 7 phần TOEIC", Description = "Làm quen dạng câu hỏi, thang điểm và lỗi thường gặp khi mới luyện đề." },
+            new { Title = "Nghe hiểu theo part", Description = "Luyện tranh, hỏi đáp, hội thoại, bài nói ngắn và kỹ thuật bắt thông tin nhanh." },
+            new { Title = "Ngữ pháp và đọc hiểu", Description = "Củng cố từ loại, mệnh đề, liên từ, đọc đoạn văn và chiến thuật loại đáp án." },
+            new { Title = "Đề tổng hợp và tối ưu điểm", Description = "Làm đề cuối khóa, chữa lỗi theo nhóm kỹ năng và lên kế hoạch luyện tốc độ." }
+        };
+    }
+    else if (courseName.Contains("kid"))
+    {
+        courseFocus = "tiếng Anh thiếu nhi";
+        outcomeText = "hình thành phản xạ nghe nói tự nhiên, vốn từ gần gũi và sự tự tin khi dùng tiếng Anh";
+        practiceText = "học qua hình ảnh, trò chơi, bài hát, kể chuyện và hoạt động tương tác";
+        projectText = "hoàn thành hoạt động trình bày ngắn phù hợp với độ tuổi";
+        curriculum = new[]
+        {
+            new { Title = "Làm quen âm thanh và từ vựng", Description = "Học phát âm, màu sắc, số đếm, đồ vật và mẫu câu ngắn qua hoạt động trực quan." },
+            new { Title = "Nghe nói qua trò chơi", Description = "Tăng phản xạ trả lời, làm việc nhóm và ghi nhớ mẫu câu bằng vận động." },
+            new { Title = "Đọc viết cơ bản", Description = "Nhận diện từ, ghép câu ngắn và luyện viết theo chủ đề quen thuộc." },
+            new { Title = "Mini show cuối khóa", Description = "Trình bày bài nói ngắn, nhận xét tiến bộ và gợi ý hoạt động luyện tại nhà." }
+        };
+    }
+    else if (courseName.Contains("business"))
+    {
+        courseFocus = "tiếng Anh công sở";
+        outcomeText = "viết email rõ ràng, giao tiếp trong họp và trình bày ý tưởng chuyên nghiệp hơn";
+        practiceText = "luyện tình huống công việc, hội thoại, email và thuyết trình ngắn";
+        projectText = "hoàn thành bài thuyết trình hoặc tình huống công sở cuối khóa";
+        curriculum = new[]
+        {
+            new { Title = "Giao tiếp công sở nền tảng", Description = "Luyện chào hỏi, trao đổi công việc, đặt lịch và phản hồi trong môi trường chuyên nghiệp." },
+            new { Title = "Email và tin nhắn công việc", Description = "Viết email rõ mục đích, đúng giọng điệu và xử lý các mẫu phản hồi phổ biến." },
+            new { Title = "Họp và thuyết trình", Description = "Nêu ý kiến, đặt câu hỏi, tóm tắt quyết định và trình bày số liệu đơn giản." },
+            new { Title = "Mô phỏng tình huống thật", Description = "Thực hành case công việc, nhận phản hồi và chuẩn hóa cách diễn đạt cá nhân." }
+        };
+    }
+    else if (courseName.Contains("pronunciation"))
+    {
+        courseFocus = "phát âm và ngữ điệu";
+        outcomeText = "phát âm rõ hơn, giảm lỗi âm cuối và nói có trọng âm, ngữ điệu tự nhiên";
+        practiceText = "luyện khẩu hình, âm khó, nối âm, trọng âm từ và nhịp câu";
+        projectText = "ghi âm bài nói cuối khóa để so sánh tiến bộ trước và sau";
+        curriculum = new[]
+        {
+            new { Title = "Chẩn đoán lỗi phát âm", Description = "Kiểm tra âm thường sai, âm cuối, trọng âm và thói quen nói hiện tại." },
+            new { Title = "Sửa âm và khẩu hình", Description = "Luyện nguyên âm, phụ âm, cặp âm dễ nhầm và cách tự kiểm tra khi nói." },
+            new { Title = "Nối âm, trọng âm, ngữ điệu", Description = "Tập nhịp câu, lên xuống giọng và độ rõ khi nói đoạn dài." },
+            new { Title = "Bài nói hoàn chỉnh", Description = "Ghi âm, nhận phản hồi và xây thói quen luyện phát âm sau khóa học." }
+        };
+    }
+    else if (courseName.Contains("communication"))
+    {
+        courseFocus = "giao tiếp hằng ngày";
+        outcomeText = "phản xạ nhanh hơn trong hội thoại quen thuộc và tự tin nói thành câu hoàn chỉnh";
+        practiceText = "luyện hội thoại theo ngữ cảnh đời sống, học tập và công việc";
+        projectText = "hoàn thành bài role-play cuối khóa với phản hồi trực tiếp";
+    }
+
+    var goals = new[]
+    {
+        $"Nắm chắc {courseFocus} theo trình độ {Model.Level}.",
+        $"Có thể {outcomeText}.",
+        $"Được {practiceText}.",
+        projectText
+    };
+
+    var nextClass = Model.CourseClasses.OrderBy(x => x.StartDate).FirstOrDefault();
+    var teacherNames = Model.CourseClasses
+        .Where(x => x.Teacher is not null)
+        .Select(x => x.Teacher.FullName)
+        .Distinct()
+        .Take(3)
+        .ToList();
 }
 
 <section class="course-detail-hero">
@@ -72,6 +178,72 @@
             <span>Được hướng dẫn và nhận phản hồi trong suốt khóa học.</span>
         </div>
     </aside>
+</section>
+
+<section class="course-detail-content">
+    <section class="course-section">
+        <p class="section-kicker">Mục tiêu khóa học</p>
+        <h2>Lộ trình học rõ ràng theo mục tiêu của bạn</h2>
+        <div class="goal-grid">
+            @for (var index = 0; index < goals.Length; index++)
+            {
+                <article class="goal-card">
+                    <span>@(index + 1)</span>
+                    <p>@goals[index]</p>
+                </article>
+            }
+        </div>
+    </section>
+
+    <section class="course-section course-program-layout">
+        <div>
+            <p class="section-kicker">Chương trình học</p>
+            <h2>Nội dung chính trong khóa học</h2>
+            <div class="timeline">
+                @for (var index = 0; index < curriculum.Length; index++)
+                {
+                    <article class="timeline-item">
+                        <span>@(index + 1)</span>
+                        <div>
+                            <h3>@curriculum[index].Title</h3>
+                            <p>@curriculum[index].Description</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+
+        <aside class="course-summary-panel">
+            <p class="section-kicker">Thông tin khóa học</p>
+            <h2>Tổng quan</h2>
+            <div class="info-list compact">
+                <div>
+                    <strong>Trình độ</strong>
+                    <span>@Model.Level</span>
+                </div>
+                <div>
+                    <strong>Thời lượng</strong>
+                    <span>@Model.Duration</span>
+                </div>
+                <div>
+                    <strong>Học phí</strong>
+                    <span>@Model.Tuition.ToString("N0") VND</span>
+                </div>
+                <div>
+                    <strong>Lớp khai giảng</strong>
+                    <span>@Model.CourseClasses.Count lớp đang mở</span>
+                </div>
+                <div>
+                    <strong>Ngày gần nhất</strong>
+                    <span>@(nextClass is null ? "Đang cập nhật" : nextClass.StartDate.ToString("dd/MM/yyyy"))</span>
+                </div>
+                <div>
+                    <strong>Giáo viên</strong>
+                    <span>@(teacherNames.Count == 0 ? "Đang cập nhật" : string.Join(", ", teacherNames))</span>
+                </div>
+            </div>
+        </aside>
+    </section>
 </section>
 
 <section class="content-card">

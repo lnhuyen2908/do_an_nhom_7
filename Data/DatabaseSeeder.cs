@@ -287,7 +287,8 @@ public class DatabaseSeeder
                 await _context.SaveChangesAsync();
             }
 
-            if (!await _context.Payments.AnyAsync(x => x.EnrollmentId == enrollment.Id))
+            if (enrollment.Status == EnrollmentState.Approved
+                && !await _context.Payments.AnyAsync(x => x.EnrollmentId == enrollment.Id))
             {
                 var paidAmount = (index % 3) switch
                 {
