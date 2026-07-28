@@ -226,7 +226,9 @@ namespace web_do_an1.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("StudentId");
+                    b.HasIndex("StudentId", "CourseId")
+                        .IsUnique()
+                        .HasFilter("[Status] <> 'Cancelled'");
 
                     b.ToTable("Enrollments");
                 });

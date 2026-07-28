@@ -25,6 +25,7 @@ public class PaymentsController : Controller
             .Include(x => x.Student)
             .Include(x => x.Enrollment).ThenInclude(x => x.Course)
             .Include(x => x.PaymentTransactions)
+            .Where(x => x.Enrollment.Status == EnrollmentState.Approved)
             .AsQueryable();
         if (status.HasValue)
         {
@@ -47,10 +48,18 @@ public class PaymentsController : Controller
             await using var transaction =
                 await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
-            var payment = await _context.Payments.FindAsync(id);
+            var payment = await _context.Payments
+                .Include(x => x.Enrollment)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (payment is null)
             {
                 return NotFound();
+            }
+
+            if (payment.Enrollment.Status != EnrollmentState.Approved)
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể ghi nhận học phí cho đăng ký đã được duyệt.";
+                return RedirectToAction(nameof(Index));
             }
 
             if (paidAmount < 0 || paidAmount > payment.Amount)

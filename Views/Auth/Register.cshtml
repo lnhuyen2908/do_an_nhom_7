@@ -1,33 +1,84 @@
 @{
     ViewData["Title"] = "Đăng ký tài khoản";
+    var minBirthDate = DateTime.Today.AddYears(-100).ToString("yyyy-MM-dd");
+    var maxBirthDate = DateTime.Today.AddYears(-5).ToString("yyyy-MM-dd");
 }
 
-<section class="auth-layout">
-    <div class="auth-intro">
-        <p class="section-kicker">Bắt đầu học ngay</p>
-        <h1>Tạo tài khoản học viên</h1>
-        <p>Khám phá khóa học, đăng ký lớp, theo dõi lịch học, điểm số và học phí trong một nơi.</p>
-        <div class="auth-note">
-            <strong>Mật khẩu mặc định</strong>
-            <span>123456</span>
+<section class="auth-page auth-page-register">
+    <div class="auth-visual" aria-hidden="true">
+        <div class="auth-visual-content">
+            <span class="auth-brand-mark">Tạo tài khoản học viên</span>
+            <p>Khám phá khóa học, đăng ký lớp, theo dõi lịch học, điểm số và học phí trong một nơi.</p>
         </div>
     </div>
-    <div class="auth-card">
-        <h2>Thông tin đăng ký</h2>
-        @if (ViewBag.Error is string error)
-        {
-            <div class="alert alert-danger">@error</div>
-        }
-        <form asp-action="Register" method="post" class="form-grid">
-            <div class="form-field full"><label>Họ và tên</label><input class="form-control" name="fullName" value="@ViewBag.FullName" required /></div>
-            <div class="form-field"><label>Tên đăng nhập</label><input class="form-control" name="userName" value="@ViewBag.UserName" minlength="3" required /></div>
-            <div class="form-field"><label>Email</label><input class="form-control" type="email" name="email" value="@ViewBag.Email" required /></div>
-            <div class="form-field"><label>Số điện thoại</label><input class="form-control" name="phone" value="@ViewBag.Phone" required /></div>
-            <div class="form-field"><label>Ngày sinh</label><input class="form-control" type="date" name="dateOfBirth" value="@ViewBag.DateOfBirth" required /></div>
-            <div class="form-field full"><label>Địa chỉ</label><input class="form-control" name="address" value="@ViewBag.Address" required /></div>
-            <div class="full action-strip">
-                <button class="btn btn-primary" type="submit">Tạo tài khoản</button>
-                <a class="btn btn-outline-secondary" asp-action="Login">Đã có tài khoản</a>
+
+    <div class="auth-form-panel">
+        <form class="auth-form auth-register-form" asp-action="Register" method="post">
+            <div class="auth-heading">
+                <span class="eyebrow">Bắt đầu học ngay</span>
+                <h1>Đăng ký tài khoản</h1>
+            </div>
+
+            @if (ViewBag.Error is string error)
+            {
+                <div class="alert alert-danger" role="alert">@error</div>
+            }
+
+            <div class="auth-fields-grid">
+                <div class="auth-field auth-field-full">
+                    <label class="form-label" for="register-full-name">Họ và tên</label>
+                    <input class="form-control" id="register-full-name" name="fullName"
+                           value="@ViewBag.FullName" autocomplete="name" required />
+                </div>
+
+                <div class="auth-field">
+                    <label class="form-label" for="register-user-name">Tên đăng nhập</label>
+                    <input class="form-control" id="register-user-name" name="userName"
+                           value="@ViewBag.UserName" autocomplete="username" minlength="3" required />
+                </div>
+
+                <div class="auth-field">
+                    <label class="form-label" for="register-email">Email</label>
+                    <input class="form-control" id="register-email" type="email" name="email"
+                           value="@ViewBag.Email" autocomplete="email" required />
+                </div>
+
+                <div class="auth-field">
+                    <label class="form-label" for="register-phone">Số điện thoại</label>
+                    <input class="form-control" id="register-phone" name="phone"
+                           value="@ViewBag.Phone" autocomplete="tel" required />
+                </div>
+
+                <div class="auth-field">
+                    <label class="form-label" for="register-date-of-birth">Ngày sinh</label>
+                    <input class="form-control" id="register-date-of-birth" type="date"
+                           name="dateOfBirth" value="@ViewBag.DateOfBirth"
+                           min="@minBirthDate" max="@maxBirthDate" required />
+                </div>
+
+                <div class="auth-field">
+                    <label class="form-label" for="register-password">Mật khẩu</label>
+                    <input class="form-control" id="register-password" type="password"
+                           name="password" autocomplete="new-password" minlength="6" required />
+                </div>
+
+                <div class="auth-field">
+                    <label class="form-label" for="register-confirm-password">Xác nhận mật khẩu</label>
+                    <input class="form-control" id="register-confirm-password" type="password"
+                           name="confirmPassword" autocomplete="new-password" minlength="6" required />
+                </div>
+
+                <div class="auth-field auth-field-full">
+                    <label class="form-label" for="register-address">Địa chỉ</label>
+                    <input class="form-control" id="register-address" name="address"
+                           value="@ViewBag.Address" autocomplete="street-address" required />
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-auth-submit" type="submit">Tạo tài khoản</button>
+            <div class="auth-switch">
+                <span>Đã có tài khoản?</span>
+                <a asp-action="Login">Đăng nhập</a>
             </div>
         </form>
     </div>
