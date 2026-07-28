@@ -1,4 +1,4 @@
-@model IEnumerable<UserAccount>
+﻿@model IEnumerable<UserAccount>
 @{
     ViewData["Title"] = "Tài khoản";
 }
@@ -34,7 +34,7 @@
                 <td>@item.Role.DisplayName</td>
                 <td>@(item.Student?.FullName ?? item.Teacher?.FullName ?? "—")</td>
                 <td>@(item.IsActive ? "Có" : "Không")</td>
-                <td class="text-nowrap">
+                    <td class="text-nowrap action-links">
                     <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
