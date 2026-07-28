@@ -7,11 +7,10 @@
 <section class="page-heading"><div><p class="section-kicker">Giáo viên</p><h1>Quản lý bài giảng</h1><p>Chia sẻ tài liệu học tập cho các khóa học đang phụ trách.</p></div></section>
 <section class="content-card">
     <h2>Thêm bài giảng</h2>
-    <form asp-action="AddLecture" method="post" class="form-grid">
+    <form asp-action="AddLecture" method="post" enctype="multipart/form-data" class="form-grid">
         <div class="form-field"><label>Khóa học</label><select class="form-select" name="courseId" required>@foreach(var course in courses){<option value="@course.Id">@course.Code · @course.Name</option>}</select></div>
         <div class="form-field"><label>Tiêu đề</label><input class="form-control" name="title" maxlength="200" required /></div>
-        <div class="form-field"><label>Tên tệp</label><input class="form-control" name="fileName" maxlength="255" placeholder="Bai-01.pdf" required /></div>
-        <div class="form-field"><label>Đường dẫn tài liệu</label><input class="form-control" name="fileUrl" maxlength="500" placeholder="https://..." required /></div>
+        <div class="form-field"><label>Tệp bài giảng</label><input class="form-control" type="file" name="lectureFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" required /></div>
         <div class="full"><button class="btn btn-primary">Thêm bài giảng</button></div>
     </form>
 </section>

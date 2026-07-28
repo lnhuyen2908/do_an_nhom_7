@@ -18,11 +18,13 @@ public class CoursesController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Index(string? keyword, string? level)
+    public async Task<IActionResult> Index(string? keyword, string? level, int page = 1)
     {
+        const int pageSize = 6;
         var query = _context.Courses.AsNoTracking();
         keyword = keyword?.Trim();
         level = level?.Trim();
+        page = Math.Max(page, 1);
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
@@ -38,7 +40,21 @@ public class CoursesController : Controller
         ViewBag.Level = level;
         ViewBag.Levels = await _context.Courses.AsNoTracking()
             .Select(x => x.Level).Distinct().OrderBy(x => x).ToListAsync();
-        return View(await query.OrderBy(x => x.Code).ToListAsync());
+
+        var totalCourses = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalCourses / (double)pageSize));
+        page = Math.Min(page, totalPages);
+
+        ViewBag.Page = page;
+        ViewBag.PageSize = pageSize;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.TotalCourses = totalCourses;
+
+        return View(await query
+            .OrderBy(x => x.Code)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync());
     }
 
     [AllowAnonymous]
