@@ -22,6 +22,7 @@ public class PaymentsController : Controller
     public async Task<IActionResult> Index(PaymentState? status)
     {
         var query = _context.Payments.AsNoTracking()
+            .Where(x => x.Enrollment.Status != EnrollmentState.Cancelled)
             .Include(x => x.Student)
             .Include(x => x.Enrollment).ThenInclude(x => x.Course)
             .Include(x => x.PaymentTransactions)

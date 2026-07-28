@@ -14,11 +14,13 @@ public class Payment
 
     [Range(0, 1_000_000_000)]
     [DataType(DataType.Currency)]
+    [DisplayFormat(DataFormatString = "{0:N0} đ")]
     [Display(Name = "Số tiền phải đóng")]
     public decimal Amount { get; set; }
 
     [Range(0, 1_000_000_000)]
     [DataType(DataType.Currency)]
+    [DisplayFormat(DataFormatString = "{0:N0} đ")]
     [Display(Name = "Số tiền đã đóng")]
     public decimal PaidAmount { get; set; }
 

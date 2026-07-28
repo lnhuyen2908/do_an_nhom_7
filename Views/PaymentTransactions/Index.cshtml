@@ -40,7 +40,7 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Amount)
+                @item.Amount.ToString("N0") đ
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.PaymentMethod)

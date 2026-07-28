@@ -109,10 +109,32 @@
                                     Đào tạo
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="staff-training-menu">
-                                    <li><a class="dropdown-item" asp-controller="Students" asp-action="Index">Quản lý học viên</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Courses" asp-action="Index">Khóa học</a></li>
                                     <li><a class="dropdown-item" asp-controller="CourseClasses" asp-action="Index">Lớp học và lịch khai giảng</a></li>
                                     <li><a class="dropdown-item" asp-controller="Enrollments" asp-action="Index">Duyệt đăng ký</a></li>
+                                    <li><a class="dropdown-item" asp-controller="AttendanceRecords" asp-action="Index">Điểm danh</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Scores" asp-action="Index">Kết quả học tập</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CourseLectures" asp-action="Index">Bài giảng</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="staff-people-menu"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Nhân sự
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="staff-people-menu">
+                                    <li><a class="dropdown-item" asp-controller="Students" asp-action="Index">Quản lý học viên</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Teachers" asp-action="Index">Danh sách giáo viên</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="staff-finance-menu"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Tài chính
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="staff-finance-menu">
                                     <li><a class="dropdown-item" asp-controller="Payments" asp-action="Index">Quản lý học phí</a></li>
+                                    <li><a class="dropdown-item" asp-controller="PaymentTransactions" asp-action="Index">Lịch sử giao dịch</a></li>
                                 </ul>
                             </li>
                         }

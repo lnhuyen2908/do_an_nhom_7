@@ -14,6 +14,7 @@ public class PaymentTransaction
 
     [Range(0.01, 1_000_000_000)]
     [DataType(DataType.Currency)]
+    [DisplayFormat(DataFormatString = "{0:N0} đ")]
     [Display(Name = "Số tiền")]
     public decimal Amount { get; set; }
 

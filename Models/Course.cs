@@ -21,6 +21,7 @@ public class Course
 
     [Range(0, 1_000_000_000)]
     [DataType(DataType.Currency)]
+    [DisplayFormat(DataFormatString = "{0:N0} đ")]
     [Display(Name = "Học phí")]
     public decimal Tuition { get; set; }
 
