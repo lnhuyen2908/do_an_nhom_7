@@ -106,7 +106,7 @@ public class PaymentsController : Controller
         }
 
         return View(await _context.Payments.AsNoTracking()
-            .Where(x => x.StudentId == studentId.Value)
+            .Where(x => x.StudentId == studentId.Value && x.Status != PaymentState.Cancelled)
             .Include(x => x.Enrollment).ThenInclude(x => x.Course)
             .Include(x => x.PaymentTransactions)
             .OrderBy(x => x.Status)
@@ -135,6 +135,13 @@ public class PaymentsController : Controller
             if (payment is null)
             {
                 return NotFound();
+            }
+
+            if (payment.Status == PaymentState.Cancelled)
+            {
+                TempData["ErrorMessage"] =
+                    "Học phí này đã bị hủy.";
+                return RedirectToAction(nameof(MyPayments));
             }
 
             if (payment.Status == PaymentState.Paid)
