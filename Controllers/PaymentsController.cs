@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -115,6 +115,7 @@ public class PaymentsController : Controller
         }
 
         return View(await _context.Payments.AsNoTracking()
+            .Where(x => x.StudentId == studentId.Value && x.Status != PaymentState.Cancelled)
             .Where(x => x.StudentId == studentId.Value
                 && x.Enrollment.Status == EnrollmentState.Approved)
             .Include(x => x.Enrollment).ThenInclude(x => x.Course)
@@ -147,6 +148,20 @@ public class PaymentsController : Controller
             if (payment is null)
             {
                 return NotFound();
+            }
+
+            if (payment.Status == PaymentState.Cancelled)
+            {
+                TempData["ErrorMessage"] =
+                    "Học phí này đã bị hủy.";
+                return RedirectToAction(nameof(MyPayments));
+            }
+
+            if (payment.Status == PaymentState.Paid)
+            {
+                TempData["ErrorMessage"] =
+                    "Học phí này đã được thanh toán.";
+                return RedirectToAction(nameof(MyPayments));
             }
 
             var remaining = payment.Amount - payment.PaidAmount;

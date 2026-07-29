@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -161,35 +161,71 @@ public class EnrollmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(int id)
     {
+        //var studentId = CurrentStudentId();
+        //var enrollment = studentId.HasValue
+        //    ? await _context.Enrollments.FirstOrDefaultAsync(x =>
+        //        x.Id == id && x.StudentId == studentId.Value
+        //        && x.Status == EnrollmentState.Pending)
+        //    : null;
+        //if (enrollment is null)
+        //{
+        //    TempData["ErrorMessage"] =
+        // "Không thể hủy đăng ký này.";
+        //    return RedirectToAction(nameof(MyEnrollments));
+        //}
+
+        //enrollment.Status = EnrollmentState.Cancelled;
+        //enrollment.CourseClassId = null;
+        //await _context.SaveChangesAsync();
+        //TempData["SuccessMessage"] = "Đã hủy đăng ký.";
+        //return RedirectToAction(nameof(MyEnrollments));
+
         var studentId = CurrentStudentId();
-        var enrollment = studentId.HasValue
-            ? await _context.Enrollments.FirstOrDefaultAsync(x =>
-                x.Id == id && x.StudentId == studentId.Value
-                && x.Status == EnrollmentState.Pending)
-            : null;
-        if (enrollment is null)
+        if (!studentId.HasValue)
         {
-            return NotFound();
+            return Forbid();
         }
 
-        var payment = await _context.Payments.FirstOrDefaultAsync(x => x.EnrollmentId == id);
-        if (payment is not null)
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            if (payment.PaidAmount > 0 || payment.Status == PaymentState.Paid)
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+            var enrollment = await _context.Enrollments
+                .Include(x => x.Payment)
+                .FirstOrDefaultAsync(x =>
+                    x.Id == id && x.StudentId == studentId.Value
+                    && x.Status == EnrollmentState.Pending);
+
+            if (enrollment is null)
             {
-                TempData["ErrorMessage"] =
-                    "Không thể hủy đăng ký đã phát sinh thanh toán. Vui lòng liên hệ nhân viên đào tạo.";
+                TempData["ErrorMessage"] = "Không thể hủy đăng ký này.";
                 return RedirectToAction(nameof(MyEnrollments));
             }
 
-            _context.Payments.Remove(payment);
-        }
+            // Đã thanh toán đủ (hệ thống không cho đóng thiếu -> Paid là trạng thái đã thu tiền)
+            if (enrollment.Payment is not null && enrollment.Payment.Status == PaymentState.Paid)
+            {
+                TempData["ErrorMessage"] =
+                    "Đăng ký này đã được thanh toán, vui lòng liên hệ để được hỗ trợ hủy/hoàn tiền.";
+                return RedirectToAction(nameof(MyEnrollments));
+            }
 
-        enrollment.Status = EnrollmentState.Cancelled;
-        enrollment.CourseClassId = null;
-        await _context.SaveChangesAsync();
-        TempData["SuccessMessage"] = "Đã hủy đăng ký.";
-        return RedirectToAction(nameof(MyEnrollments));
+            enrollment.Status = EnrollmentState.Cancelled;
+            enrollment.CourseClassId = null;
+
+            if (enrollment.Payment is not null)
+            {
+                enrollment.Payment.Status = PaymentState.Cancelled;
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            TempData["SuccessMessage"] = "Đã hủy đăng ký.";
+            return RedirectToAction(nameof(MyEnrollments));
+        });
     }
 
     private int? CurrentStudentId()

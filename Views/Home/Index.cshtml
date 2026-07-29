@@ -1,4 +1,4 @@
-@model IEnumerable<Course>
+﻿@model IEnumerable<Course>
 @{
     ViewData["Title"] = "Trang chủ";
     var roleName = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
@@ -34,17 +34,6 @@
         </div>
     </div>
 
-    @if (User.Identity?.IsAuthenticated == true)
-    {
-        <div class="login-note hero-login">
-            <span>Tài khoản</span>
-            <strong>@User.FindFirst("UserName")?.Value</strong>
-            <span>@roleDisplay</span>
-            <a class="btn btn-primary btn-sm mt-2" asp-controller="Courses" asp-action="Index">
-                Tiếp tục sử dụng
-            </a>
-        </div>
-    }
 </section>
 
 <div class="section-title">

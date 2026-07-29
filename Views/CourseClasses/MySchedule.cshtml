@@ -1,12 +1,21 @@
-@model IEnumerable<Enrollment>
+﻿@model IEnumerable<Enrollment>
 @using web_do_an1.Models
 @{
     ViewData["Title"] = "Lịch học";
 }
 <section class="page-heading"><div><p class="section-kicker">Học viên</p><h1>Lịch học của tôi</h1><p>Các lớp đã được duyệt và xếp lịch.</p></div></section>
 <div class="timeline-list">
-@foreach (var item in Model)
-{
-    <article class="schedule-card"><div class="schedule-date"><strong>@item.CourseClass!.StartDate.Day</strong><span>Tháng @item.CourseClass.StartDate.Month</span></div><div><span class="badge text-bg-light">@item.CourseClass.Code</span><h2>@item.Course.Name</h2><p>@item.CourseClass.Schedule · @item.CourseClass.Room</p><p>Giáo viên: <strong>@item.CourseClass.Teacher.FullName</strong></p></div></article>
-}
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Bạn chưa có lịch học nào được xếp.
+        </div>
+    }
+    else
+    {
+        @foreach (var item in Model)
+        {
+            <article class="schedule-card"><div class="schedule-date"><strong>@item.CourseClass!.StartDate.Day</strong><span>Tháng @item.CourseClass.StartDate.Month</span></div><div><span class="badge text-bg-light">@item.CourseClass.Code</span><h2>@item.Course.Name</h2><p>@item.CourseClass.Schedule · @item.CourseClass.Room</p><p>Giáo viên: <strong>@item.CourseClass.Teacher.FullName</strong></p></div></article>
+        }
+    }
 </div>
