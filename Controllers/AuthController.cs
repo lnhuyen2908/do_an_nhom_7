@@ -49,27 +49,34 @@ public class AuthController : Controller
         string? userName,
         string? email,
         string? phone,
-        DateTime dateOfBirth,
-        string? address)
+        DateTime? dateOfBirth,
+        string? address,
+        string? password,
+        string? confirmPassword)
     {
         fullName = fullName?.Trim() ?? string.Empty;
         userName = userName?.Trim().ToLowerInvariant() ?? string.Empty;
         email = email?.Trim() ?? string.Empty;
         phone = phone?.Trim() ?? string.Empty;
         address = address?.Trim() ?? string.Empty;
+        password ??= string.Empty;
+        confirmPassword ??= string.Empty;
 
         ViewBag.FullName = fullName;
         ViewBag.UserName = userName;
         ViewBag.Email = email;
         ViewBag.Phone = phone;
-        ViewBag.DateOfBirth = dateOfBirth == default ? string.Empty : dateOfBirth.ToString("yyyy-MM-dd");
+        ViewBag.DateOfBirth = dateOfBirth.HasValue ? dateOfBirth.Value.ToString("yyyy-MM-dd") : string.Empty;
         ViewBag.Address = address;
 
         if (string.IsNullOrWhiteSpace(fullName)
             || string.IsNullOrWhiteSpace(userName)
             || string.IsNullOrWhiteSpace(email)
             || string.IsNullOrWhiteSpace(phone)
-            || string.IsNullOrWhiteSpace(address))
+            || string.IsNullOrWhiteSpace(address)
+            || string.IsNullOrWhiteSpace(password)
+            || string.IsNullOrWhiteSpace(confirmPassword)
+            || !dateOfBirth.HasValue)
         {
             ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
             return View();
@@ -78,6 +85,18 @@ public class AuthController : Controller
         if (userName.Length < 3)
         {
             ViewBag.Error = "Tên đăng nhập phải có ít nhất 3 ký tự.";
+            return View();
+        }
+
+        if (password.Length < 6)
+        {
+            ViewBag.Error = "Mật khẩu phải có ít nhất 6 ký tự.";
+            return View();
+        }
+
+        if (password != confirmPassword)
+        {
+            ViewBag.Error = "Mật khẩu xác nhận không khớp.";
             return View();
         }
 
@@ -93,8 +112,8 @@ public class AuthController : Controller
             return View();
         }
 
-        if (dateOfBirth.Date > DateTime.Today.AddYears(-5)
-            || dateOfBirth.Date < DateTime.Today.AddYears(-100))
+        if (dateOfBirth.Value.Date > DateTime.Today.AddYears(-5)
+            || dateOfBirth.Value.Date < DateTime.Today.AddYears(-100))
         {
             ViewBag.Error = "Học viên phải từ 5 đến 100 tuổi.";
             return View();
@@ -138,7 +157,7 @@ public class AuthController : Controller
                 FullName = fullName,
                 Email = email,
                 Phone = phone,
-                DateOfBirth = dateOfBirth,
+                DateOfBirth = dateOfBirth.Value,
                 Address = address
             };
             _context.Students.Add(student);
@@ -148,7 +167,7 @@ public class AuthController : Controller
             {
                 FullName = fullName,
                 UserName = userName,
-                Password = "123456",
+                Password = password,
                 Email = email,
                 Phone = phone,
                 RoleId = studentRole.Id,
@@ -159,8 +178,7 @@ public class AuthController : Controller
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            TempData["SuccessMessage"] =
-                "Đăng ký tài khoản thành công. Mật khẩu mặc định là 123456.";
+            TempData["SuccessMessage"] = "Đăng ký tài khoản thành công. Vui lòng đăng nhập.";
             return RedirectToAction(nameof(Login));
         });
     }
@@ -172,7 +190,7 @@ public class AuthController : Controller
         string? password,
         string? returnUrl)
     {
-        userName = userName?.Trim() ?? string.Empty;
+        userName = userName?.Trim().ToLowerInvariant() ?? string.Empty;
         password ??= string.Empty;
 
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))

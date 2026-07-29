@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         var selected = document.querySelector('input[name="paymentMethod"]:checked');
-        transferPanel.hidden = !selected || selected.value !== "Transfer";
+        transferPanel.hidden = !selected || selected.value !== "BankTransfer";
     }
 
     paymentMethods.forEach(function (item) {
@@ -119,6 +119,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var dictionaryCache = {};
     var dictionaryTimer;
+    var dictionaryRequestId = 0;
+    var localDictionary = {
+        hello: "xin chào",
+        goodbye: "tạm biệt",
+        thanks: "cảm ơn",
+        thank: "cảm ơn",
+        course: "khóa học",
+        class: "lớp học",
+        teacher: "giáo viên",
+        student: "học viên",
+        payment: "thanh toán",
+        tuition: "học phí",
+        schedule: "lịch học",
+        score: "điểm số",
+        attendance: "điểm danh",
+        lesson: "bài học",
+        lecture: "bài giảng",
+        homework: "bài tập về nhà",
+        exam: "kỳ thi",
+        speaking: "kỹ năng nói",
+        listening: "kỹ năng nghe",
+        reading: "kỹ năng đọc",
+        writing: "kỹ năng viết"
+    };
 
     function renderDictionaryResult(word, meaning) {
         dictionaryResult.textContent = "";
@@ -134,8 +158,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         var keyword = dictionaryInput.value.trim().toLowerCase();
+        keyword = keyword.replace(/^[^a-z]+|[^a-z]+$/g, "");
         if (!keyword) {
             dictionaryResult.textContent = "Nhập một từ để tra nhanh.";
+            return;
+        }
+
+        if (!/^[a-z][a-z\s-]*$/.test(keyword)) {
+            dictionaryResult.textContent = "Từ điển hiện hỗ trợ từ tiếng Anh.";
             return;
         }
 
@@ -144,10 +174,21 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        if (localDictionary[keyword]) {
+            dictionaryCache[keyword] = localDictionary[keyword];
+            renderDictionaryResult(keyword, localDictionary[keyword]);
+            return;
+        }
+
+        var requestId = ++dictionaryRequestId;
         dictionaryResult.textContent = "Đang tra cứu...";
         fetch("https://api.mymemory.translated.net/get?q=" + encodeURIComponent(keyword) + "&langpair=en|vi")
             .then(function (response) { return response.ok ? response.json() : Promise.reject(); })
             .then(function (data) {
+                if (requestId !== dictionaryRequestId) {
+                    return;
+                }
+
                 var translatedText = data && data.responseData && data.responseData.translatedText;
                 if (!translatedText) {
                     dictionaryResult.textContent = "Không tìm thấy nghĩa phù hợp.";
@@ -158,6 +199,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 renderDictionaryResult(keyword, translatedText);
             })
             .catch(function () {
+                if (requestId !== dictionaryRequestId) {
+                    return;
+                }
+
                 dictionaryResult.textContent = "Không thể kết nối API từ điển. Vui lòng thử lại sau.";
             });
     }

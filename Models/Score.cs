@@ -33,6 +33,8 @@ public class Score
     [Display(Name = "Kết quả")]
     public string Result => AverageScore >= 5 ? "Đạt" : "Chưa đạt";
 
+    [Display(Name = "Học viên")]
     public Student Student { get; set; } = null!;
+    [Display(Name = "Lớp học")]
     public CourseClass CourseClass { get; set; } = null!;
 }

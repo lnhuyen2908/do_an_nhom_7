@@ -96,9 +96,40 @@ public class EnrollmentsController : Controller
                 }
             }
 
+            var payment = await _context.Payments.FirstOrDefaultAsync(x => x.EnrollmentId == id);
+            if (status == EnrollmentState.Cancelled && payment is not null)
+            {
+                if (payment.PaidAmount > 0 || payment.Status == PaymentState.Paid)
+                {
+                    TempData["ErrorMessage"] =
+                        "Không thể hủy đăng ký đã phát sinh thanh toán. Vui lòng xử lý học phí trước.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                _context.Payments.Remove(payment);
+            }
+
             enrollment.Status = status;
             enrollment.CourseClassId =
                 status == EnrollmentState.Approved ? courseClassId : null;
+
+            if (status == EnrollmentState.Approved && payment is null)
+            {
+                var tuition = await _context.Courses.AsNoTracking()
+                    .Where(x => x.Id == enrollment.CourseId)
+                    .Select(x => x.Tuition)
+                    .FirstAsync();
+
+                _context.Payments.Add(new Payment
+                {
+                    StudentId = enrollment.StudentId,
+                    EnrollmentId = enrollment.Id,
+                    Amount = tuition,
+                    Status = PaymentState.Unpaid,
+                    PaymentMethod = PaymentMethod.Cash
+                });
+            }
+
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             TempData["SuccessMessage"] = "Đã cập nhật trạng thái đăng ký.";
