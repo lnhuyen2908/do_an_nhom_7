@@ -62,7 +62,9 @@ public class DatabaseSeeder
             ("TC07", "Bùi Ngọc Mai", "IELTS Writing"),
             ("TC08", "Hoàng Tuấn Kiệt", "Business English"),
             ("TC09", "Đặng Khánh Linh", "TOEIC"),
-            ("TC10", "Ngô Đức Anh", "Tiếng Anh học thuật")
+            ("TC10", "Ngô Đức Anh", "Tiếng Anh học thuật"),
+            ("TC11", "Mai Phương Thảo", "Ngữ pháp ứng dụng"),
+            ("TC12", "Vũ Minh Khang", "Giao tiếp thực hành")
         };
 
         for (var index = 0; index < teachers.Length; index++)
@@ -87,7 +89,11 @@ public class DatabaseSeeder
             "Võ Đức Long", "Đặng Khánh Vy", "Bùi Anh Khoa", "Đỗ Ngọc Trâm",
             "Hoàng Minh Quân", "Ngô Thanh Tâm", "Phan Tuấn Anh", "Lý Hải Yến",
             "Trương Gia Bảo", "Mai Thảo Nhi", "Đinh Quốc Việt", "Vũ Hà My",
-            "Nguyễn Đức Minh", "Trần Ngọc Ánh", "Lê Thành Đạt", "Phạm Kim Ngân"
+            "Nguyễn Đức Minh", "Trần Ngọc Ánh", "Lê Thành Đạt", "Phạm Kim Ngân",
+            "Đỗ Minh Khôi", "Võ Nhật Linh", "Bùi Phương Uyên", "Hoàng Anh Tú",
+            "Ngô Bảo Châu", "Phan Gia Hân", "Lý Minh Triết", "Trương Khánh An",
+            "Mai Hải Nam", "Đinh Thảo Vy", "Vũ Quốc Hưng", "Nguyễn Tường Vi",
+            "Trần Gia Khang", "Lê Ngọc Diệp", "Phạm Đức Toàn", "Đặng Minh Thư"
         };
 
         for (var index = 0; index < studentNames.Length; index++)
@@ -121,7 +127,11 @@ public class DatabaseSeeder
             new Course { Code = "CR05", Name = "General English", Level = "A1", Tuition = 2_200_000, Duration = "8 tuần", Description = "Củng cố phát âm, từ vựng và ngữ pháp cho người mới bắt đầu.", ImageUrl = "/images/courses/general.jpg" },
             new Course { Code = "CR06", Name = "IELTS 6.5 Intensive", Level = "B2", Tuition = 5_200_000, Duration = "14 tuần", Description = "Lộ trình tăng tốc bốn kỹ năng hướng đến IELTS 6.5.", ImageUrl = "/images/courses/ielts.jpg" },
             new Course { Code = "CR07", Name = "Business English", Level = "B1", Tuition = 3_900_000, Duration = "10 tuần", Description = "Tiếng Anh công sở, email, họp và thuyết trình chuyên nghiệp.", ImageUrl = "/images/courses/communication.jpg" },
-            new Course { Code = "CR08", Name = "Pronunciation Mastery", Level = "A2", Tuition = 2_400_000, Duration = "6 tuần", Description = "Sửa âm, trọng âm và ngữ điệu để giao tiếp rõ ràng hơn.", ImageUrl = "/images/courses/general.jpg" }
+            new Course { Code = "CR08", Name = "Pronunciation Mastery", Level = "A2", Tuition = 2_400_000, Duration = "6 tuần", Description = "Sửa âm, trọng âm và ngữ điệu để giao tiếp rõ ràng hơn.", ImageUrl = "/images/courses/general.jpg" },
+            new Course { Code = "CR09", Name = "Academic English", Level = "B2", Tuition = 4_600_000, Duration = "12 tuần", Description = "Phát triển kỹ năng đọc hiểu, ghi chú và trình bày ý tưởng trong môi trường học thuật.", ImageUrl = "/images/courses/ielts.jpg" },
+            new Course { Code = "CR10", Name = "TOEIC Speaking & Writing", Level = "B1", Tuition = 3_600_000, Duration = "8 tuần", Description = "Luyện phản xạ nói, viết câu trả lời rõ ý và xử lý các dạng bài TOEIC Speaking Writing.", ImageUrl = "/images/courses/toeic.jpg" },
+            new Course { Code = "CR11", Name = "English Grammar Booster", Level = "A2", Tuition = 2_300_000, Duration = "6 tuần", Description = "Hệ thống hóa ngữ pháp trọng tâm, sửa lỗi câu phổ biến và áp dụng vào bài nói, bài viết.", ImageUrl = "/images/courses/general.jpg" },
+            new Course { Code = "CR12", Name = "Conversation Club", Level = "A2", Tuition = 1_900_000, Duration = "6 tuần", Description = "Không gian luyện nói theo chủ đề thực tế, tăng sự tự tin và phản xạ giao tiếp tự nhiên.", ImageUrl = "/images/courses/communication.jpg" }
         };
 
         foreach (var source in courses)
@@ -146,14 +156,14 @@ public class DatabaseSeeder
 
     private async Task SeedClassesAsync()
     {
-        var courses = await _context.Courses.OrderBy(x => x.Code).Take(8).ToListAsync();
-        var teachers = await _context.Teachers.OrderBy(x => x.Code).Take(10).ToListAsync();
-        if (courses.Count < 8 || teachers.Count < 8)
+        var courses = await _context.Courses.OrderBy(x => x.Code).Take(12).ToListAsync();
+        var teachers = await _context.Teachers.OrderBy(x => x.Code).Take(12).ToListAsync();
+        if (courses.Count < 12 || teachers.Count < 12)
         {
             return;
         }
 
-        for (var index = 0; index < 8; index++)
+        for (var index = 0; index < 12; index++)
         {
             var code = $"CL{index + 1:00}";
             var courseClass = await _context.CourseClasses.FirstOrDefaultAsync(x => x.Code == code);
@@ -194,7 +204,7 @@ public class DatabaseSeeder
             "0909000002",
             roles["Staff"].Id);
 
-        var teachers = await _context.Teachers.OrderBy(x => x.Code).Take(10).ToListAsync();
+        var teachers = await _context.Teachers.OrderBy(x => x.Code).Take(12).ToListAsync();
         for (var index = 0; index < teachers.Count; index++)
         {
             var teacher = teachers[index];
@@ -207,7 +217,7 @@ public class DatabaseSeeder
                 teacherId: teacher.Id);
         }
 
-        var students = await _context.Students.OrderBy(x => x.Code).Take(20).ToListAsync();
+        var students = await _context.Students.OrderBy(x => x.Code).Take(36).ToListAsync();
         for (var index = 0; index < students.Count; index++)
         {
             var student = students[index];
@@ -258,11 +268,11 @@ public class DatabaseSeeder
 
     private async Task SeedLearningDataAsync()
     {
-        var students = await _context.Students.OrderBy(x => x.Code).Take(12).ToListAsync();
+        var students = await _context.Students.OrderBy(x => x.Code).Take(36).ToListAsync();
         var classes = await _context.CourseClasses
             .Include(x => x.Course).Include(x => x.Teacher)
-            .OrderBy(x => x.Code).Take(8).ToListAsync();
-        if (students.Count < 12 || classes.Count < 4)
+            .OrderBy(x => x.Code).Take(12).ToListAsync();
+        if (students.Count < 36 || classes.Count < 12)
         {
             return;
         }
@@ -270,49 +280,66 @@ public class DatabaseSeeder
         for (var index = 0; index < students.Count; index++)
         {
             var student = students[index];
-            var courseClass = classes[index % 4];
-            var enrollment = await _context.Enrollments.FirstOrDefaultAsync(x =>
-                x.StudentId == student.Id && x.CourseId == courseClass.CourseId);
+            var courseClass = classes[index % classes.Count];
+            var activeEnrollments = await _context.Enrollments
+                .Where(x => x.StudentId == student.Id && x.Status != EnrollmentState.Cancelled)
+                .ToListAsync();
+            var enrollment = activeEnrollments.FirstOrDefault(x => x.CourseId == courseClass.CourseId)
+                ?? activeEnrollments.FirstOrDefault();
+
             if (enrollment is null)
             {
                 enrollment = new Enrollment
                 {
                     StudentId = student.Id,
                     CourseId = courseClass.CourseId,
-                    CourseClassId = index < 10 ? courseClass.Id : null,
-                    Status = index < 10 ? EnrollmentState.Approved : EnrollmentState.Pending,
+                    CourseClassId = courseClass.Id,
+                    Status = EnrollmentState.Approved,
                     RegisteredAt = DateTime.Now.AddDays(-(index + 2))
                 };
                 _context.Enrollments.Add(enrollment);
                 await _context.SaveChangesAsync();
             }
 
-            if (!await _context.Payments.AnyAsync(x => x.EnrollmentId == enrollment.Id))
+            foreach (var extraEnrollment in activeEnrollments.Where(x => x.Id != enrollment.Id))
+            {
+                extraEnrollment.Status = EnrollmentState.Cancelled;
+                extraEnrollment.CourseClassId = null;
+            }
+
+            enrollment.CourseId = courseClass.CourseId;
+            enrollment.CourseClassId = courseClass.Id;
+            enrollment.Status = EnrollmentState.Approved;
+
+            if (enrollment.Status == EnrollmentState.Approved)
             {
                 var paidAmount = (index % 3) switch
                 {
                     0 => courseClass.Course.Tuition,
                     _ => 0
                 };
-                _context.Payments.Add(new Payment
+
+                var payment = await _context.Payments.FirstOrDefaultAsync(x => x.EnrollmentId == enrollment.Id);
+                payment ??= new Payment { EnrollmentId = enrollment.Id };
+                payment.StudentId = student.Id;
+                payment.Amount = courseClass.Course.Tuition;
+                payment.PaidAmount = paidAmount;
+                payment.Status = paidAmount <= 0
+                    ? PaymentState.Unpaid
+                    : PaymentState.Paid;
+                payment.PaymentMethod = index % 2 == 0
+                    ? PaymentMethod.BankTransfer
+                    : PaymentMethod.Cash;
+                payment.PaidDate = paidAmount > 0 ? DateTime.Today.AddDays(-index) : null;
+
+                if (payment.Id == 0)
                 {
-                    StudentId = student.Id,
-                    EnrollmentId = enrollment.Id,
-                    Amount = courseClass.Course.Tuition,
-                    PaidAmount = paidAmount,
-                    Status = paidAmount <= 0
-                        ? PaymentState.Unpaid
-                        : PaymentState.Paid,
-                    PaymentMethod = index % 2 == 0
-                        ? PaymentMethod.BankTransfer
-                        : PaymentMethod.Cash,
-                    PaidDate = paidAmount > 0 ? DateTime.Today.AddDays(-index) : null
-                });
+                    _context.Payments.Add(payment);
+                }
             }
 
             if (enrollment.Status == EnrollmentState.Approved
                 && enrollment.CourseClassId.HasValue
-                && index < 8
                 && !await _context.Scores.AnyAsync(x =>
                     x.StudentId == student.Id
                     && x.CourseClassId == enrollment.CourseClassId.Value))
