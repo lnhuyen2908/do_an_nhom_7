@@ -1,0 +1,94 @@
+﻿@model Payment
+@using web_do_an1.Models
+
+@{
+    ViewData["Title"] = "Thanh toán học phí";
+
+    string bank = "TCB";
+    string account = "19073006413011";
+    string accountName = "TRUNG TAM ANH NGU";
+
+    decimal remaining = Model.Amount - Model.PaidAmount;
+
+    string content = $"HP_{Model.Id}";
+
+    string qr =
+        $"https://img.vietqr.io/image/{bank}-{account}-compact2.png?amount={remaining}&addInfo={content}&accountName={accountName}";
+}
+
+<section class="page-heading">
+    <div>
+        <p class="section-kicker">THANH TOÁN</p>
+        <h1>Quét mã QR</h1>
+        <p>Quét mã bằng ứng dụng ngân hàng để thanh toán học phí.</p>
+    </div>
+</section>
+
+<div class="qr-container">
+
+    <div class="payment-card">
+
+        <div class="course-badge">
+            @Model.Enrollment.Course.Code
+        </div>
+
+        <h2>@Model.Enrollment.Course.Name</h2>
+
+        <div class="amount-box">
+            <span>Số tiền cần thanh toán</span>
+            <h1>@remaining.ToString("N0") đ</h1>
+        </div>
+
+        <div class="qr-box">
+            <img src="@qr" />
+        </div>
+
+        <div class="payment-info">
+
+            <div>
+                <span>Ngân hàng</span>
+                <strong>Techcombank</strong>
+            </div>
+
+            <div>
+                <span>Số tài khoản</span>
+                <strong>@account</strong>
+            </div>
+
+            <div>
+                <span>Chủ tài khoản</span>
+                <strong>@accountName</strong>
+            </div>
+
+            <div>
+                <span>Nội dung CK</span>
+                <strong class="content">@content</strong>
+            </div>
+
+        </div>
+
+        <form asp-action="Pay" method="post" class="mt-4">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <input type="hidden" name="amount" value="@remaining" />
+
+            <input type="hidden"
+                   name="paymentMethod"
+                   value="@PaymentMethod.BankTransfer" />
+
+            <button class="btn-pay">
+                Tôi đã thanh toán
+            </button>
+
+        </form>
+
+        <a asp-action="MyPayments" class="btn-back">
+            Quay lại
+        </a>
+
+    </div>
+
+</div>

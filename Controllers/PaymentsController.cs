@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -180,6 +180,24 @@ public class PaymentsController : Controller
             return PaymentState.Unpaid;
         }
         return paid >= amount ? PaymentState.Paid : PaymentState.Unpaid;
+    }
+
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> QR(int id)
+    {
+        var studentId = CurrentStudentId();
+        if (!studentId.HasValue)
+            return Forbid();
+
+        var payment = await _context.Payments
+            .Include(x => x.Enrollment)
+            .ThenInclude(x => x.Course)
+            .FirstOrDefaultAsync(x => x.Id == id && x.StudentId == studentId);
+
+        if (payment == null)
+            return NotFound();
+
+        return View(payment);
     }
 
     private int? CurrentStudentId()

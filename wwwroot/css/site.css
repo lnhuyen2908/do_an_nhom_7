@@ -21,6 +21,127 @@ body { background: #f5f7fb; color: #1d2733; }
 .stat-card span { display: block; color: #657180; font-size: .9rem; }
 .stat-card strong { display: block; margin-top: 6px; font-size: 1.6rem; }
 
+.qr-container {
+    max-width: 700px;
+    margin: 40px auto;
+}
+
+.payment-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 10px 35px rgba(0,0,0,.08);
+}
+
+.course-badge {
+    display: inline-block;
+    background: #e8faf6;
+    color: #00796b;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.payment-card h2 {
+    font-weight: 800;
+    margin-bottom: 25px;
+}
+
+.amount-box {
+    background: #f8fbfc;
+    border: 1px solid #dfe8ea;
+    border-radius: 18px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+    .amount-box span {
+        color: #777;
+        display: block;
+    }
+
+    .amount-box h1 {
+        color: #009688;
+        font-size: 40px;
+        font-weight: 800;
+        margin-top: 8px;
+    }
+
+.qr-box {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+    .qr-box img {
+        width: 300px;
+        border-radius: 16px;
+        border: 8px solid white;
+        box-shadow: 0 8px 25px rgba(0,0,0,.12);
+    }
+
+.payment-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+    .payment-info div {
+        background: #fafafa;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        padding: 15px;
+    }
+
+    .payment-info span {
+        display: block;
+        color: #888;
+        font-size: 13px;
+    }
+
+    .payment-info strong {
+        font-size: 17px;
+    }
+
+.content {
+    color: #00897b;
+}
+
+.btn-pay {
+    width: 100%;
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    background: #009688;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    transition: .2s;
+}
+
+    .btn-pay:hover {
+        background: #00796b;
+    }
+
+.btn-back {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 15px;
+    padding: 14px;
+    border-radius: 14px;
+    text-decoration: none;
+    background: #f2f2f2;
+    color: #444;
+    font-weight: 600;
+}
+
+    .btn-back:hover {
+        background: #e4e4e4;
+    }
+
 .action-links {
     white-space: nowrap;
     font-weight: 600;
