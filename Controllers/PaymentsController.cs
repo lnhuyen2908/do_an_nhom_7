@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +25,7 @@ public class PaymentsController : Controller
             .Where(x => x.Enrollment.Status != EnrollmentState.Cancelled)
             .Include(x => x.Student)
             .Include(x => x.Enrollment).ThenInclude(x => x.Course)
+            .Include(x => x.Enrollment).ThenInclude(x => x.CourseClass)
             .Include(x => x.PaymentTransactions)
             .Where(x => x.Enrollment.Status == EnrollmentState.Approved)
             .AsQueryable();
