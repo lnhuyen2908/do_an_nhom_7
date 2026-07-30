@@ -126,12 +126,18 @@ public class DatabaseSeeder
             new Course { Code = "CR04", Name = "English for Kids", Level = "Kids", Tuition = 2_800_000, Duration = "8 tuần", Description = "Khóa học sinh động giúp trẻ xây dựng nền tảng tiếng Anh tự nhiên.", ImageUrl = "/images/courses/kids.jpg" },
             new Course { Code = "CR05", Name = "General English", Level = "A1", Tuition = 2_200_000, Duration = "8 tuần", Description = "Củng cố phát âm, từ vựng và ngữ pháp cho người mới bắt đầu.", ImageUrl = "/images/courses/general.jpg" },
             new Course { Code = "CR06", Name = "IELTS 6.5 Intensive", Level = "B2", Tuition = 5_200_000, Duration = "14 tuần", Description = "Lộ trình tăng tốc bốn kỹ năng hướng đến IELTS 6.5.", ImageUrl = "/images/courses/ielts.jpg" },
-            new Course { Code = "CR07", Name = "Business English", Level = "B1", Tuition = 3_900_000, Duration = "10 tuần", Description = "Tiếng Anh công sở, email, họp và thuyết trình chuyên nghiệp.", ImageUrl = "/images/courses/communication.jpg" },
-            new Course { Code = "CR08", Name = "Pronunciation Mastery", Level = "A2", Tuition = 2_400_000, Duration = "6 tuần", Description = "Sửa âm, trọng âm và ngữ điệu để giao tiếp rõ ràng hơn.", ImageUrl = "/images/courses/general.jpg" },
-            new Course { Code = "CR09", Name = "Academic English", Level = "B2", Tuition = 4_600_000, Duration = "12 tuần", Description = "Phát triển kỹ năng đọc hiểu, ghi chú và trình bày ý tưởng trong môi trường học thuật.", ImageUrl = "/images/courses/ielts.jpg" },
+            new Course { Code = "CR07", Name = "Business English", Level = "B1", Tuition = 3_900_000, Duration = "10 tuần", Description = "Tiếng Anh công sở, email, họp và thuyết trình chuyên nghiệp.", ImageUrl = "/images/courses/business-english.svg" },
+            new Course { Code = "CR08", Name = "Pronunciation Mastery", Level = "A2", Tuition = 2_400_000, Duration = "6 tuần", Description = "Sửa âm, trọng âm và ngữ điệu để giao tiếp rõ ràng hơn.", ImageUrl = "/images/courses/pronunciation.svg" },
+            new Course { Code = "CR09", Name = "Academic English", Level = "B2", Tuition = 4_600_000, Duration = "12 tuần", Description = "Phát triển kỹ năng đọc hiểu, ghi chú và trình bày ý tưởng trong môi trường học thuật.", ImageUrl = "/images/courses/academic-writing.svg" },
             new Course { Code = "CR10", Name = "TOEIC Speaking & Writing", Level = "B1", Tuition = 3_600_000, Duration = "8 tuần", Description = "Luyện phản xạ nói, viết câu trả lời rõ ý và xử lý các dạng bài TOEIC Speaking Writing.", ImageUrl = "/images/courses/toeic.jpg" },
-            new Course { Code = "CR11", Name = "English Grammar Booster", Level = "A2", Tuition = 2_300_000, Duration = "6 tuần", Description = "Hệ thống hóa ngữ pháp trọng tâm, sửa lỗi câu phổ biến và áp dụng vào bài nói, bài viết.", ImageUrl = "/images/courses/general.jpg" },
-            new Course { Code = "CR12", Name = "Conversation Club", Level = "A2", Tuition = 1_900_000, Duration = "6 tuần", Description = "Không gian luyện nói theo chủ đề thực tế, tăng sự tự tin và phản xạ giao tiếp tự nhiên.", ImageUrl = "/images/courses/communication.jpg" }
+            new Course { Code = "CR11", Name = "English Grammar Booster", Level = "A2", Tuition = 2_300_000, Duration = "6 tuần", Description = "Hệ thống hóa ngữ pháp trọng tâm, sửa lỗi câu phổ biến và áp dụng vào bài nói, bài viết.", ImageUrl = "/images/courses/grammar-lab.svg" },
+            new Course { Code = "CR12", Name = "Conversation Club", Level = "A2", Tuition = 1_900_000, Duration = "6 tuần", Description = "Không gian luyện nói theo chủ đề thực tế, tăng sự tự tin và phản xạ giao tiếp tự nhiên.", ImageUrl = "/images/courses/communication.jpg" },
+            new Course { Code = "CR13", Name = "Teen English Confidence", Level = "Teen", Tuition = 3_100_000, Duration = "10 tuần", Description = "Lộ trình giúp học sinh THCS/THPT tăng phản xạ nói, từ vựng học đường và tự tin thuyết trình.", ImageUrl = "/images/courses/online-english.svg" },
+            new Course { Code = "CR14", Name = "English for Travel", Level = "A2", Tuition = 2_600_000, Duration = "7 tuần", Description = "Chuẩn bị mẫu câu, tình huống sân bay, khách sạn, hỏi đường và giao tiếp du lịch.", ImageUrl = "/images/courses/communication.jpg" },
+            new Course { Code = "CR15", Name = "IELTS Writing Clinic", Level = "B2", Tuition = 4_200_000, Duration = "8 tuần", Description = "Tập trung sửa lỗi Task 1, Task 2, phát triển ý và nâng chất lượng bài viết IELTS.", ImageUrl = "/images/courses/academic-writing.svg" },
+            new Course { Code = "CR16", Name = "TOEIC Listening Intensive", Level = "B1", Tuition = 3_400_000, Duration = "8 tuần", Description = "Luyện nghe TOEIC theo từng part, tăng tốc độ bắt keyword và xử lý bẫy thường gặp.", ImageUrl = "/images/courses/toeic.jpg" },
+            new Course { Code = "CR17", Name = "Online English Flex", Level = "A2-B1", Tuition = 2_900_000, Duration = "8 tuần", Description = "Lớp trực tuyến linh hoạt cho người bận rộn, có bài tập và phản hồi sau mỗi buổi.", ImageUrl = "/images/courses/online-english.svg" },
+            new Course { Code = "CR18", Name = "English Presentation Skills", Level = "B1", Tuition = 3_700_000, Duration = "8 tuần", Description = "Rèn kỹ năng trình bày, mở bài, chuyển ý, xử lý câu hỏi và nói trước đám đông bằng tiếng Anh.", ImageUrl = "/images/courses/business-english.svg" }
         };
 
         foreach (var source in courses)
@@ -156,30 +162,41 @@ public class DatabaseSeeder
 
     private async Task SeedClassesAsync()
     {
-        var courses = await _context.Courses.OrderBy(x => x.Code).Take(12).ToListAsync();
+        var courses = await _context.Courses.OrderBy(x => x.Code).Take(18).ToListAsync();
         var teachers = await _context.Teachers.OrderBy(x => x.Code).Take(12).ToListAsync();
-        if (courses.Count < 12 || teachers.Count < 12)
+        if (courses.Count < 18 || teachers.Count < 12)
         {
             return;
         }
 
-        for (var index = 0; index < 12; index++)
+        var classIndex = 1;
+        for (var courseIndex = 0; courseIndex < courses.Count; courseIndex++)
         {
-            var code = $"CL{index + 1:00}";
-            var courseClass = await _context.CourseClasses.FirstOrDefaultAsync(x => x.Code == code);
-            courseClass ??= new CourseClass { Code = code };
-            courseClass.CourseId = courses[index].Id;
-            courseClass.TeacherId = teachers[index].Id;
-            courseClass.Room = index % 3 == 2 ? $"Online {index + 1:00}" : $"P{index + 1:00}1";
-            courseClass.Schedule = index % 2 == 0
-                ? "Thứ 2-4-6, 18:00-19:30"
-                : "Thứ 3-5, 19:00-20:30";
-            courseClass.StartDate = DateTime.Today.AddDays(7 + index * 3);
-            courseClass.Capacity = 20 + index;
-
-            if (courseClass.Id == 0)
+            var numberOfClasses = courseIndex % 2 == 0 ? 2 : 1;
+            for (var section = 0; section < numberOfClasses; section++)
             {
-                _context.CourseClasses.Add(courseClass);
+                var index = classIndex - 1;
+                var code = $"CL{classIndex:00}";
+                var courseClass = await _context.CourseClasses.FirstOrDefaultAsync(x => x.Code == code);
+                courseClass ??= new CourseClass { Code = code };
+                courseClass.CourseId = courses[courseIndex].Id;
+                courseClass.TeacherId = teachers[(courseIndex + section * 3) % teachers.Count].Id;
+                courseClass.Room = index % 4 == 3 ? $"Online {classIndex:00}" : $"P{classIndex:00}{section + 1}";
+                courseClass.Schedule = (index % 3) switch
+                {
+                    0 => "Thứ 2-4-6, 18:00-19:30",
+                    1 => "Thứ 3-5, 19:00-20:30",
+                    _ => "Thứ 7-CN, 08:30-10:00"
+                };
+                courseClass.StartDate = DateTime.Today.AddDays(7 + index * 2);
+                courseClass.Capacity = 18 + index % 8;
+
+                if (courseClass.Id == 0)
+                {
+                    _context.CourseClasses.Add(courseClass);
+                }
+
+                classIndex++;
             }
         }
 
@@ -271,8 +288,8 @@ public class DatabaseSeeder
         var students = await _context.Students.OrderBy(x => x.Code).Take(36).ToListAsync();
         var classes = await _context.CourseClasses
             .Include(x => x.Course).Include(x => x.Teacher)
-            .OrderBy(x => x.Code).Take(12).ToListAsync();
-        if (students.Count < 36 || classes.Count < 12)
+            .OrderBy(x => x.Code).Take(27).ToListAsync();
+        if (students.Count < 36 || classes.Count < 27)
         {
             return;
         }

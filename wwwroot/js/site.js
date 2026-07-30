@@ -228,4 +228,52 @@ document.addEventListener("DOMContentLoaded", function () {
             dictionaryTimer = setTimeout(translateWord, 400);
         });
     }
+
+    document.body.classList.add("app-loaded");
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        var animatedElements = document.querySelectorAll([
+            ".hero-panel",
+            ".hero-summary-card",
+            ".section-title",
+            ".course-card",
+            ".stat-card",
+            ".content-card",
+            ".table-card",
+            ".form-card",
+            ".detail-main",
+            ".side-panel",
+            ".profile-summary",
+            ".payment-item",
+            ".summary-card",
+            ".record-card",
+            ".resource-card",
+            ".class-choice-card",
+            ".auth-page",
+            ".site-footer"
+        ].join(","));
+
+        if ("IntersectionObserver" in window) {
+            var revealObserver = new IntersectionObserver(function (entries, observer) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                });
+            }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+
+            animatedElements.forEach(function (element, index) {
+                element.classList.add("app-reveal");
+                element.style.setProperty("--reveal-delay", Math.min(index % 6, 5) * 45 + "ms");
+                revealObserver.observe(element);
+            });
+        } else {
+            animatedElements.forEach(function (element) {
+                element.classList.add("is-visible");
+            });
+        }
+    }
 });
