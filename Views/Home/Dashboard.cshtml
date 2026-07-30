@@ -26,12 +26,12 @@
 
 <section class="content-card">
     <div class="section-title-row">
-        <div><p class="section-kicker">Hoạt động gần đây</p><h2>Đăng ký khóa học mới</h2></div>
+        <div><p class="section-kicker">Hoạt động gần đây</p><h2>Đăng ký đã duyệt & hoàn tất học phí</h2></div>
         <a class="btn btn-primary" asp-controller="Enrollments" asp-action="Index">Xử lý đăng ký</a>
     </div>
     <div class="table-responsive">
         <table class="table align-middle">
-            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Ngày đăng ký</th><th>Trạng thái</th></tr></thead>
+            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Học phí</th><th>Ngày đăng ký</th><th>Trạng thái</th></tr></thead>
             <tbody>
             @foreach (var item in recent)
             {
@@ -39,6 +39,7 @@
                 <tr>
                     <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
                     <td>@item.Course.Name</td>
+                    <td>@item.Course.Tuition.ToString("N0") đ</td>
                     <td>@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
                     <td><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></td>
                 </tr>

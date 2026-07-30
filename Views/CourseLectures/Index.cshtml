@@ -1,4 +1,4 @@
-@model IEnumerable<web_do_an1.Models.CourseLecture>
+﻿@model IEnumerable<web_do_an1.Models.CourseLecture>
 
 @{
     ViewData["Title"] = "Danh sách";
@@ -19,9 +19,6 @@
                 @Html.DisplayNameFor(model => model.FileName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FileUrl)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.UploadedAt)
             </th>
             <th>
@@ -40,10 +37,7 @@
                 @Html.DisplayFor(modelItem => item.Title)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FileName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FileUrl)
+                <a href="@item.FileUrl" target="_blank" rel="noopener">@item.FileName</a>
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UploadedAt)

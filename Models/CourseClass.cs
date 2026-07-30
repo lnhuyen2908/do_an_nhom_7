@@ -33,7 +33,9 @@ public class CourseClass
     [Display(Name = "Sĩ số tối đa")]
     public int Capacity { get; set; } = 20;
 
+    [Display(Name = "Khóa học")]
     public Course Course { get; set; } = null!;
+    [Display(Name = "Giáo viên")]
     public Teacher Teacher { get; set; } = null!;
     public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     public ICollection<Score> Scores { get; set; } = new List<Score>();

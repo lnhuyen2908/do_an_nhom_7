@@ -38,6 +38,10 @@ public class EnglishCenterDbContext : DbContext
         modelBuilder.Entity<Teacher>().HasIndex(x => x.Email).IsUnique();
         modelBuilder.Entity<Course>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<CourseClass>().HasIndex(x => x.Code).IsUnique();
+        modelBuilder.Entity<Enrollment>()
+            .HasIndex(x => new { x.StudentId, x.CourseId })
+            .IsUnique()
+            .HasFilter("[Status] <> 'Cancelled'");
         modelBuilder.Entity<Payment>().HasIndex(x => x.EnrollmentId).IsUnique();
         modelBuilder.Entity<Score>().HasIndex(x => new { x.StudentId, x.CourseClassId }).IsUnique();
         modelBuilder.Entity<AttendanceRecord>()

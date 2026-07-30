@@ -27,6 +27,8 @@ public class CourseLecture
     [Display(Name = "Ngày tải lên")]
     public DateTime UploadedAt { get; set; } = DateTime.Now;
 
+    [Display(Name = "Khóa học")]
     public Course Course { get; set; } = null!;
+    [Display(Name = "Giáo viên")]
     public Teacher Teacher { get; set; } = null!;
 }

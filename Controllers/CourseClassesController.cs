@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -236,6 +236,7 @@ public class CourseClassesController : Controller
             .Include(x => x.Course)
             .Include(x => x.CourseClass).ThenInclude(x => x!.Teacher)
             .OrderBy(x => x.CourseClass!.StartDate)
+            .ThenBy(x => x.CourseClass!.Schedule)
             .ToListAsync());
     }
 

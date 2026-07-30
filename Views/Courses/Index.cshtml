@@ -2,6 +2,9 @@
 @{
     ViewData["Title"] = "Danh sách khóa học";
     var canManage = User.IsInRole("Admin") || User.IsInRole("Staff");
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalCourses = ViewBag.TotalCourses is int total ? total : Model.Count();
 }
 
 @if (canManage)
@@ -41,6 +44,32 @@
         }
         </tbody>
     </table>
+    @if (totalPages > 1)
+    {
+        <nav class="pager-bar" aria-label="Phân trang khóa học">
+            <span>Trang @currentPage/@totalPages · @totalCourses khóa học</span>
+            <div>
+                <a class="pager-number @(currentPage == 1 ? "disabled" : "")"
+                   asp-action="Index"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-level="@ViewBag.Level"
+                   asp-route-page="@(currentPage - 1)">Trước</a>
+                @for (var number = 1; number <= totalPages; number++)
+                {
+                    <a class="pager-number @(number == currentPage ? "active" : "")"
+                       asp-action="Index"
+                       asp-route-keyword="@ViewBag.Keyword"
+                       asp-route-level="@ViewBag.Level"
+                       asp-route-page="@number">@number</a>
+                }
+                <a class="pager-number @(currentPage == totalPages ? "disabled" : "")"
+                   asp-action="Index"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-level="@ViewBag.Level"
+                   asp-route-page="@(currentPage + 1)">Sau</a>
+            </div>
+        </nav>
+    }
 }
 else
 {
@@ -75,4 +104,30 @@ else
             </article>
         }
     </div>
+    @if (totalPages > 1)
+    {
+        <nav class="pager-bar" aria-label="Phân trang khóa học">
+            <span>Trang @currentPage/@totalPages · @totalCourses khóa học</span>
+            <div>
+                <a class="pager-number @(currentPage == 1 ? "disabled" : "")"
+                   asp-action="Index"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-level="@ViewBag.Level"
+                   asp-route-page="@(currentPage - 1)">Trước</a>
+                @for (var number = 1; number <= totalPages; number++)
+                {
+                    <a class="pager-number @(number == currentPage ? "active" : "")"
+                       asp-action="Index"
+                       asp-route-keyword="@ViewBag.Keyword"
+                       asp-route-level="@ViewBag.Level"
+                       asp-route-page="@number">@number</a>
+                }
+                <a class="pager-number @(currentPage == totalPages ? "disabled" : "")"
+                   asp-action="Index"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-level="@ViewBag.Level"
+                   asp-route-page="@(currentPage + 1)">Sau</a>
+            </div>
+        </nav>
+    }
 }

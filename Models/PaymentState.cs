@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace web_do_an1.Models;
 
@@ -8,5 +8,8 @@ public enum PaymentState
     Unpaid,
 
     [Display(Name = "Đã thanh toán")]
-    Paid
+    Paid,
+
+    [Display(Name = "Đã hủy")]
+    Cancelled
 }

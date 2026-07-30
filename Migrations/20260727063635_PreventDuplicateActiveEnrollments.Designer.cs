@@ -12,8 +12,8 @@ using web_do_an1.Data;
 namespace web_do_an1.Migrations
 {
     [DbContext(typeof(EnglishCenterDbContext))]
-    [Migration("20260723090012_RenamePasswordColumn")]
-    partial class RenamePasswordColumn
+    [Migration("20260727063635_PreventDuplicateActiveEnrollments")]
+    partial class PreventDuplicateActiveEnrollments
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -229,7 +229,9 @@ namespace web_do_an1.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("StudentId");
+                    b.HasIndex("StudentId", "CourseId")
+                        .IsUnique()
+                        .HasFilter("[Status] <> 'Cancelled'");
 
                     b.ToTable("Enrollments");
                 });

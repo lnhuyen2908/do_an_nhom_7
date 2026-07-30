@@ -31,6 +31,8 @@ public class PaymentTransaction
     [Display(Name = "Ghi chú")]
     public string Note { get; set; } = string.Empty;
 
+    [Display(Name = "Học phí")]
     public Payment Payment { get; set; } = null!;
+    [Display(Name = "Học viên")]
     public Student Student { get; set; } = null!;
 }
