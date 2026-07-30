@@ -130,24 +130,7 @@ public class EnrollmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(int id)
     {
-        //var studentId = CurrentStudentId();
-        //var enrollment = studentId.HasValue
-        //    ? await _context.Enrollments.FirstOrDefaultAsync(x =>
-        //        x.Id == id && x.StudentId == studentId.Value
-        //        && x.Status == EnrollmentState.Pending)
-        //    : null;
-        //if (enrollment is null)
-        //{
-        //    TempData["ErrorMessage"] =
-        // "Không thể hủy đăng ký này.";
-        //    return RedirectToAction(nameof(MyEnrollments));
-        //}
-
-        //enrollment.Status = EnrollmentState.Cancelled;
-        //enrollment.CourseClassId = null;
-        //await _context.SaveChangesAsync();
-        //TempData["SuccessMessage"] = "Đã hủy đăng ký.";
-        //return RedirectToAction(nameof(MyEnrollments));
+      
 
         var studentId = CurrentStudentId();
         if (!studentId.HasValue)
