@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 @{
     var roleName = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
@@ -69,7 +69,7 @@
                                 <ul class="dropdown-menu" aria-labelledby="admin-training-menu">
                                     <li><a class="dropdown-item" asp-controller="Courses" asp-action="Index">Khóa học</a></li>
                                     <li><a class="dropdown-item" asp-controller="CourseClasses" asp-action="Index">Lớp học và lịch khai giảng</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Enrollments" asp-action="Index">Đăng ký khóa học</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Enrollments" asp-action="Index">Xử lí đăng kí</a></li>
                                     <li><a class="dropdown-item" asp-controller="Scores" asp-action="Index">Kết quả học tập</a></li>
                                     <li><a class="dropdown-item" asp-controller="AttendanceRecords" asp-action="Index">Điểm danh</a></li>
                                     <li><a class="dropdown-item" asp-controller="CourseLectures" asp-action="Index">Bài giảng</a></li>

@@ -210,6 +210,24 @@ public class PaymentsController : Controller
         return paid >= amount ? PaymentState.Paid : PaymentState.Unpaid;
     }
 
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> QR(int id)
+    {
+        var studentId = CurrentStudentId();
+        if (!studentId.HasValue)
+            return Forbid();
+
+        var payment = await _context.Payments
+            .Include(x => x.Enrollment)
+            .ThenInclude(x => x.Course)
+            .FirstOrDefaultAsync(x => x.Id == id && x.StudentId == studentId);
+
+        if (payment == null)
+            return NotFound();
+
+        return View(payment);
+    }
+
     private int? CurrentStudentId()
     {
         return int.TryParse(User.FindFirstValue("StudentId"), out var id) ? id : null;

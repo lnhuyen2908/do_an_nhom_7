@@ -1,4 +1,4 @@
-@model IEnumerable<Course>
+﻿@model IEnumerable<Course>
 @{
     ViewData["Title"] = "Danh sách khóa học";
     var canManage = User.IsInRole("Admin") || User.IsInRole("Staff");

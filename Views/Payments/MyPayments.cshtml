@@ -1,4 +1,4 @@
-@model IEnumerable<Payment>
+﻿@model IEnumerable<Payment>
 @using web_do_an1.Models
 @{
     ViewData["Title"] = "Học phí của tôi";
@@ -20,11 +20,44 @@
         </div>
         @if (remaining > 0)
         {
-            <form asp-action="Pay" method="post" class="inline-management-form mt-3">
+            @* <form asp-action="Pay" method="post" class="inline-management-form mt-3"> *@
+            @* <form id="payForm-@item.Id" asp-action="Pay" method="post">
                 <input type="hidden" name="id" value="@item.Id" />
-                <input class="form-control" type="number" min="1" max="@remaining.ToString("0")" step="1" name="amount" value="@remaining.ToString("0")" />
-                <select class="form-select" name="paymentMethod"><option value="BankTransfer">Chuyển khoản</option><option value="Card">Thẻ</option><option value="Cash">Tiền mặt</option></select>
-                <button class="btn btn-primary">Thanh toán</button>
+                <input class="form-control" type="number" min="1" max="@remaining.ToString("0")" step="1" name="amount" value="@remaining.ToString("0")" /> *@
+                @* <select class="form-select" name="paymentMethod"><option value="BankTransfer">Chuyển khoản</option><option value="Card">Thẻ</option><option value="Cash">Tiền mặt</option></select>
+                <button class="btn btn-primary">Thanh toán</button> *@
+            @*     <select class="form-select payment-method"
+                        name="paymentMethod"
+                        data-id="@item.Id">
+
+                    <option value="BankTransfer">Chuyển khoản</option>
+                    <option value="Card">Thẻ</option>
+                    <option value="Cash">Tiền mặt</option>
+
+                </select>
+
+                <button type="submit" class="btn btn-primary">
+                    Thanh toán
+                </button>
+            </form> *@
+            <form id="payForm-@item.Id" asp-action="Pay" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="id" value="@item.Id" />
+                <input type="hidden" name="amount" value="@remaining" />
+
+                <select class="form-select payment-method"
+                        name="paymentMethod"
+                        data-id="@item.Id">
+
+                    <option value="BankTransfer">Chuyển khoản</option>
+                    <option value="Card">Thẻ</option>
+                    <option value="Cash">Tiền mặt</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary">
+                    Thanh toán
+                </button>
             </form>
         }
         @if (item.PaymentTransactions.Count > 0)
@@ -36,3 +69,24 @@
     </article>
 }
 </div>
+<script>
+    document.querySelectorAll(".payment-method").forEach(function(select) {
+
+        select.closest("form").addEventListener("submit", function(e) {
+
+            if (select.value === "BankTransfer") {
+
+                e.preventDefault();
+
+                var id = select.dataset.id;
+                var amount = select.dataset.amount;
+
+                window.location.href =
+                    "/Payments/QR?id=" + id + "&amount=" + amount;
+                // window.location.href = "/Payments/QR?id=" + id;
+            }
+
+        });
+
+    });
+</script>

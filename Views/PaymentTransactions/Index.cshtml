@@ -1,4 +1,4 @@
-@model IEnumerable<web_do_an1.Models.PaymentTransaction>
+﻿@model IEnumerable<web_do_an1.Models.PaymentTransaction>
 
 @{
     ViewData["Title"] = "Danh sách";
@@ -6,9 +6,9 @@
 
 <h1>Danh sách</h1>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Thêm mới</a>
-</p>
+@* <p>
+    <a class="btn btn-primary" asp-action="Create">Thêm mới</a> 
+</p> *@
 <table class="table">
     <thead>
         <tr>
@@ -61,7 +61,7 @@
                 @Html.DisplayFor(modelItem => item.Student.FullName)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                @* <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> | *@
                 <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
             </td>
