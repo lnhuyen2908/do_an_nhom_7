@@ -23,6 +23,8 @@ public class AttendanceRecord
     [Display(Name = "Ghi chú")]
     public string Note { get; set; } = string.Empty;
 
+    [Display(Name = "Học viên")]
     public Student Student { get; set; } = null!;
+    [Display(Name = "Lớp học")]
     public CourseClass CourseClass { get; set; } = null!;
 }

@@ -23,11 +23,7 @@ public class HomeController : Controller
         ViewBag.CourseCount = await _context.Courses.CountAsync();
         ViewBag.ClassCount = await _context.CourseClasses.CountAsync();
 
-        var featuredCourses = await _context.Courses
-            .AsNoTracking()
-            .OrderBy(x => x.Code)
-            .Take(3)
-            .ToListAsync();
+        var featuredCourses = await _context.Courses .AsNoTracking()    .OrderBy(x => x.Code).Take(3).ToListAsync();
 
         return View(featuredCourses);
     }
@@ -39,15 +35,14 @@ public class HomeController : Controller
         ViewBag.TeacherCount = await _context.Teachers.CountAsync();
         ViewBag.CourseCount = await _context.Courses.CountAsync();
         ViewBag.ClassCount = await _context.CourseClasses.CountAsync();
-        ViewBag.PendingEnrollmentCount = await _context.Enrollments
-            .CountAsync(x => x.Status == EnrollmentState.Pending);
-        ViewBag.ApprovedEnrollmentCount = await _context.Enrollments
-            .CountAsync(x => x.Status == EnrollmentState.Approved);
-        ViewBag.ExpectedTuition = await _context.Payments.SumAsync(x => (decimal?)x.Amount) ?? 0;
-        ViewBag.CollectedTuition = await _context.Payments.SumAsync(x => (decimal?)x.PaidAmount) ?? 0;
+        ViewBag.PendingEnrollmentCount = await _context.Enrollments.CountAsync(x => x.Status == EnrollmentState.Pending);
+        ViewBag.ApprovedEnrollmentCount = await _context.Enrollments.CountAsync(x => x.Status == EnrollmentState.Approved);
+        ViewBag.ExpectedTuition = await _context.Payments.Where(x => x.Enrollment.Status != EnrollmentState.Cancelled) .SumAsync(x => (decimal?)x.Amount) ?? 0;
+        ViewBag.CollectedTuition = await _context.Payments .Where(x => x.Enrollment.Status != EnrollmentState.Cancelled).SumAsync(x => (decimal?)x.PaidAmount) ?? 0;
 
         ViewBag.RecentEnrollments = await _context.Enrollments.AsNoTracking()
-            .Include(x => x.Student).Include(x => x.Course)
+            .Where(x => x.Status == EnrollmentState.Approved && x.Payment != null && (x.Payment.Status == PaymentState.Paid || x.Payment.PaidAmount >= x.Payment.Amount))
+            .Include(x => x.Student).Include(x => x.Course).Include(x => x.Payment)
             .OrderByDescending(x => x.RegisteredAt).Take(8).ToListAsync();
         return View();
     }

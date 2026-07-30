@@ -15,6 +15,8 @@ public class SavedCourse
     [Display(Name = "Ngày lưu")]
     public DateTime SavedAt { get; set; } = DateTime.Now;
 
+    [Display(Name = "Học viên")]
     public Student Student { get; set; } = null!;
+    [Display(Name = "Khóa học")]
     public Course Course { get; set; } = null!;
 }
