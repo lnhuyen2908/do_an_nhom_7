@@ -1,4 +1,4 @@
-﻿@model Payment
+@model Payment
 @using web_do_an1.Models
 
 @{
@@ -13,7 +13,7 @@
     string content = $"HP_{Model.Id}";
 
     string qr =
-        $"https://img.vietqr.io/image/{bank}-{account}-compact2.png?amount={remaining}&addInfo={content}&accountName={accountName}";
+        $"https://img.vietqr.io/image/{bank}-{account}-compact2.png?amount={(long)remaining}&addInfo={content}&accountName={accountName}";
 }
 
 <section class="page-heading">

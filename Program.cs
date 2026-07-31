@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using web_do_an1.Data;
@@ -17,7 +17,7 @@ builder.Services.AddControllersWithViews(options =>
 
 builder.Services.AddDbContext<EnglishCenterDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        builder.Configuration.GetConnectionString("ketnoituongdoi"),
         sql => sql.EnableRetryOnFailure()));
 
 builder.Services
