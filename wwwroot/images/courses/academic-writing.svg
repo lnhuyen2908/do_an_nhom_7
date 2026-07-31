@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Academic writing course illustration</title>
+  <desc id="desc">Notebook, essay structure blocks and pencil for academic English writing.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect x="130" y="72" width="520" height="384" rx="24" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+  <rect x="182" y="128" width="292" height="20" rx="10" fill="#0f766e"/>
+  <rect x="182" y="184" width="384" height="15" rx="8" fill="#cbd5e1"/>
+  <rect x="182" y="222" width="346" height="15" rx="8" fill="#cbd5e1"/>
+  <rect x="182" y="260" width="404" height="15" rx="8" fill="#cbd5e1"/>
+  <rect x="182" y="320" width="262" height="18" rx="9" fill="#93c5fd"/>
+  <rect x="182" y="366" width="340" height="15" rx="8" fill="#cbd5e1"/>
+  <path d="M680 130l112 112-238 238-102 26 26-102z" fill="#f59e0b"/>
+  <path d="M680 130l112 112-42 42-112-112z" fill="#2563eb"/>
+  <path d="M452 506l26-102 76 76z" fill="#0f172a"/>
+  <circle cx="744" cy="86" r="58" fill="#ccfbf1"/>
+  <text x="154" y="504" fill="#0f172a" font-family="Segoe UI,Arial,sans-serif" font-size="36" font-weight="800">Academic Writing</text>
+</svg>

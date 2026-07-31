@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Pronunciation course illustration</title>
+  <desc id="desc">Sound waves, microphone and speaking practice cards for pronunciation class.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#eaf4ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect x="108" y="88" width="744" height="364" rx="30" fill="#fff" stroke="#d9e2ec" stroke-width="3"/>
+  <circle cx="304" cy="244" r="104" fill="#dbeafe"/>
+  <rect x="268" y="154" width="72" height="154" rx="36" fill="#2563eb"/>
+  <rect x="292" y="310" width="24" height="64" rx="12" fill="#0f766e"/>
+  <rect x="250" y="374" width="108" height="18" rx="9" fill="#0f766e"/>
+  <path d="M450 190c42 36 42 108 0 144M510 158c72 64 72 180 0 244M570 126c106 96 106 268 0 364" fill="none" stroke="#0f766e" stroke-width="18" stroke-linecap="round" opacity=".72"/>
+  <rect x="612" y="156" width="176" height="52" rx="26" fill="#f0fdfa"/>
+  <rect x="612" y="236" width="126" height="52" rx="26" fill="#eef6ff"/>
+  <rect x="612" y="316" width="196" height="52" rx="26" fill="#fff7ed"/>
+  <text x="136" y="428" fill="#0f172a" font-family="Segoe UI,Arial,sans-serif" font-size="38" font-weight="800">Pronunciation Mastery</text>
+</svg>

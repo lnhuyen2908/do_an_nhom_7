@@ -34,11 +34,24 @@
         </div>
     </div>
 
+    <aside class="hero-summary-card">
+        <span class="hero-card-label">Tư vấn lộ trình</span>
+        <strong>Chọn đúng khóa học ngay từ đầu</strong>
+        <p>Giao tiếp, IELTS, TOEIC, thiếu nhi và lớp nền tảng theo mục tiêu học tập.</p>
+        <div class="hero-mini-stats">
+            <span><strong>@Model.Count()</strong> khóa học</span>
+            <span><strong>2</strong> hình thức học</span>
+        </div>
+        <a class="btn btn-sm btn-primary" asp-controller="Auth" asp-action="Register">Đăng ký tư vấn</a>
+    </aside>
 </section>
 
-<div class="section-title">
-    <h2>Khóa học nổi bật</h2>
-    <a asp-controller="Courses" asp-action="Index">Xem tất cả</a>
+<div class="section-title home-section-title">
+    <div>
+        <p class="section-kicker">Chương trình đào tạo</p>
+        <h2>Khóa học nổi bật</h2>
+    </div>
+    <a class="btn btn-sm btn-outline-primary" asp-controller="Courses" asp-action="Index">Xem tất cả</a>
 </div>
 
 <div class="course-grid">

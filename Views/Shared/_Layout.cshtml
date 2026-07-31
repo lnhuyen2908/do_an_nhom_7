@@ -10,6 +10,8 @@
         "Student" => "Học viên",
         _ => string.Empty
     };
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
 }
 <head>
     <meta charset="utf-8" />
@@ -36,7 +38,8 @@
         <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom app-nav">
             <div class="container-fluid px-3 px-xl-4">
                 <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                    Trung tâm Tiếng Anh
+                    <span class="brand-mark" aria-hidden="true">E</span>
+                    <span>Trung tâm Tiếng Anh</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#main-navbar" aria-controls="main-navbar"
@@ -47,13 +50,13 @@
                 <div class="collapse navbar-collapse" id="main-navbar">
                     <ul class="navbar-nav me-auto align-items-xl-center">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Courses" asp-action="Index">Khóa học</a>
+                            <a class="nav-link @(currentController == "Courses" ? "active" : "")" asp-controller="Courses" asp-action="Index">Khóa học</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="CourseClasses" asp-action="Schedule">Lịch khai giảng</a>
+                            <a class="nav-link @(currentController == "CourseClasses" && currentAction == "Schedule" ? "active" : "")" asp-controller="CourseClasses" asp-action="Schedule">Lịch khai giảng</a>
                         </li>
 
                         @if (User.IsInRole("Admin"))
@@ -165,10 +168,10 @@
                         @if (User.Identity?.IsAuthenticated != true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Auth" asp-action="Register">Đăng ký</a>
+                                <a class="btn btn-sm btn-outline-primary nav-action" asp-controller="Auth" asp-action="Register">Đăng ký</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Auth" asp-action="Login">Đăng nhập</a>
+                                <a class="btn btn-sm btn-primary nav-action" asp-controller="Auth" asp-action="Login">Đăng nhập</a>
                             </li>
                         }
                         else
@@ -214,7 +217,54 @@
         </main>
     </div>
 
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-brand">
+                <img src="~/images/uneti-logo.png" asp-append-version="true"
+                     alt="Logo Trường Đại học Kinh tế - Kỹ thuật Công nghiệp UNETI" />
+                <div>
+                    <span>UNETI</span>
+                    <strong>Trường Đại học Kinh tế - Kỹ thuật Công nghiệp</strong>
+                    <p>Đồ án: Web quản lý trung tâm tiếng Anh</p>
+                </div>
+            </div>
+
+            <div class="footer-project">
+                <span>Thông tin đồ án</span>
+                <dl>
+                    <div>
+                        <dt>Nhóm</dt>
+                        <dd>Nhóm 7</dd>
+                    </div>
+                    <div>
+                        <dt>Giảng viên hướng dẫn</dt>
+                        <dd>Phạm Thị Thùy</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="footer-members">
+                <span>Sinh viên thực hiện</span>
+                <ul>
+                    <li>Nguyễn Tiến Nam</li>
+                    <li>Nguyễn Đình Đạt</li>
+                    <li>Lã Ngọc Huyền</li>
+                    <li>Trần Anh Đức</li>
+                    <li>Đinh Ngọc Cường</li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
     <section class="dictionary-widget" data-dictionary-widget>
+        <a class="zalo-contact-widget"
+           href="https://zalo.me/0865859102"
+           target="_blank"
+           rel="noopener"
+           aria-label="Liên hệ Zalo số 0865859102">
+            <img src="~/images/zalo-logo.png" asp-append-version="true" alt="" aria-hidden="true" />
+            <span>Liên hệ Zalo</span>
+        </a>
         <button class="dictionary-toggle" type="button" data-dictionary-toggle>Từ điển</button>
         <div class="dictionary-panel" data-dictionary-panel hidden>
             <div class="dictionary-head">

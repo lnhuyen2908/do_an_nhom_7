@@ -4,3 +4,4 @@ obj/
 .dotnet/
 .nuget_packages/
 .tools/
+*.csproj.user
