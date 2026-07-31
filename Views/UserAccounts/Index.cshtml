@@ -19,7 +19,7 @@
                 <th>Tên đăng nhập</th>
                 <th>Email</th>
                 <th>Vai trò</th>
-                <th>Liên kết</th> 
+                @* <th>Liên kết</th>  *@
                 <th>Hoạt động</th>
                 <th></th>
             </tr>
@@ -32,7 +32,7 @@
                 <td>@item.UserName</td>
                 <td>@item.Email</td>
                 <td>@item.Role.DisplayName</td>
-                <td>@(item.Student?.FullName ?? item.Teacher?.FullName ?? "—")</td> 
+                @* <td>@(item.Student?.FullName ?? item.Teacher?.FullName ?? "—")</td>  *@
                 <td>@(item.IsActive ? "Có" : "Không")</td>
                     <td class="text-nowrap action-links">
                     <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
