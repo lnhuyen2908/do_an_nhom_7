@@ -12,17 +12,26 @@
 <section class="content-card">
     <div class="table-responsive">
         <table class="table align-middle">
-            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Đăng ký</th><th>Trạng thái</th><th style="min-width:340px">Xử lý</th></tr></thead>
+            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Đăng ký</th><th>Trạng thái</th><th>Học phí</th><th style="min-width:340px">Xử lý</th></tr></thead>
             <tbody>
             @foreach (var item in Model)
             {
                 var courseClasses = classes.Where(x => x.CourseId == item.CourseId);
-                var statusText = item.Status switch { EnrollmentState.Pending => "Chờ duyệt", EnrollmentState.Approved => "Đã duyệt", _ => "Đã hủy" };
+                var isPaid = item.Payment != null && (item.Payment.Status == PaymentState.Paid || item.Payment.PaidAmount >= item.Payment.Amount);
+                var statusText = item.Status switch
+                {
+                    EnrollmentState.Pending => "Chờ duyệt",
+                    EnrollmentState.Approved => isPaid ? "Hoàn tất" : "Đã duyệt",
+                    _ => "Đã hủy"
+                };
+                var paymentText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
+                var paymentCss = isPaid ? "approved" : "pending";
                 <tr>
                     <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
                     <td>@item.Course.Name<small class="d-block text-muted">@(item.CourseClass?.Code ?? "Chưa xếp lớp")</small></td>
                     <td>@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
                     <td><span class="status-pill status-@item.Status.ToString().ToLowerInvariant()">@statusText</span></td>
+                    <td><span class="status-pill status-@paymentCss">@paymentText</span></td>
                     <td>
                         <form asp-action="UpdateStatus" method="post" class="inline-management-form">
                             <input type="hidden" name="id" value="@item.Id" />

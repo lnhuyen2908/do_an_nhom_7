@@ -16,7 +16,7 @@
                 var statusCss = isPaid ? "paid" : "unpaid";
                 <tr>
                     <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
-                    <td>@item.Enrollment.Course.Name</td>
+                    <td>@item.Enrollment.Course.Name<small class="d-block text-muted">@(item.Enrollment.CourseClass?.Code ?? "Chưa xếp lớp")</small></td>
                     <td>@item.Amount.ToString("N0") đ</td>
                     <td>@item.PaidAmount.ToString("N0") đ</td>
                     <td><span class="status-pill status-@statusCss">@statusText</span></td>

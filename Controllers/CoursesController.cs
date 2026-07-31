@@ -25,12 +25,13 @@ public class CoursesController : Controller
         keyword = keyword?.Trim();
         level = level?.Trim();
         page = Math.Max(page, 1);
-
+        //lọc theo từ khoá tìm kiếm (Mã hoặc tên khóa học)
         if (!string.IsNullOrWhiteSpace(keyword))
         {
             query = query.Where(x => x.Code.Contains(keyword) || x.Name.Contains(keyword));
         }
 
+        //lọc theo trình độ 
         if (!string.IsNullOrWhiteSpace(level))
         {
             query = query.Where(x => x.Level == level);

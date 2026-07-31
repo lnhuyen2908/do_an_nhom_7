@@ -1,8 +1,8 @@
-@model Student
+﻿@model Student
 @{
     ViewData["Title"] = "Hồ sơ học viên";
 }
-<section class="page-heading"><div><p class="section-kicker">@Model.Code</p><h1>Hồ sơ học viên</h1><p>Cập nhật thông tin cá nhân được sử dụng tại trung tâm.</p></div></section>
+<section class="page-heading"><div><h1>Hồ sơ học viên</h1><p>Cập nhật thông tin cá nhân được sử dụng tại trung tâm.</p></div></section>
 <section class="content-card narrow-card">
     <form asp-action="Profile" method="post" class="form-grid">
         <div class="form-field full"><label asp-for="FullName"></label><input class="form-control" asp-for="FullName" /><span asp-validation-for="FullName"></span></div>

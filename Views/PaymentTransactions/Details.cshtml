@@ -1,4 +1,4 @@
-@model web_do_an1.Models.PaymentTransaction
+﻿@model web_do_an1.Models.PaymentTransaction
 
 @{
     ViewData["Title"] = "Chi tiết";
@@ -7,14 +7,13 @@
 <h1>Chi tiết</h1>
 
 <div>
-    <h4>PaymentTransaction</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Amount)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Amount)
+            @Model.Amount.ToString("N0") đ
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.PaymentMethod)
