@@ -1,4 +1,4 @@
-@model IEnumerable<Payment>
+﻿@model IEnumerable<Payment>
 @using web_do_an1.Models
 @{
     ViewData["Title"] = "Quản lý học phí";
@@ -7,7 +7,18 @@
 <section class="content-card">
     <div class="table-responsive">
         <table class="table align-middle">
-            <thead><tr><th>Học viên</th><th>Khóa học</th><th>Phải đóng</th><th>Đã đóng</th><th>Trạng thái</th><th style="min-width:360px">Cập nhật</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Học viên</th>
+                    <th>Khóa học</th>
+                    <th>Phải đóng</th>
+                    <th>Đã đóng</th>
+                    <th>Trạng thái</th>
+     
+                    <th style="min-width: 300px;">Cập nhật</th>
+                </tr>
+
+            </thead>
             <tbody>
             @foreach (var item in Model)
             {
@@ -25,7 +36,9 @@
                             <input type="hidden" name="id" value="@item.Id" />
                             <input class="form-control form-control-sm" type="number" min="0" max="@item.Amount.ToString("0")" step="1" name="paidAmount" value="@item.PaidAmount.ToString("0")" />
                             <select class="form-select form-select-sm" name="paymentMethod">
-                                <option value="Cash">Tiền mặt</option><option value="BankTransfer">Chuyển khoản</option><option value="Card">Thẻ</option>
+                                <option value="Cash" selected="@(item.PaymentMethod == PaymentMethod.Cash ? "selected" : null)">Tiền mặt</option>
+                                <option value="BankTransfer" selected="@(item.PaymentMethod == PaymentMethod.BankTransfer ? "selected" : null)">Chuyển khoản</option>
+                                <option value="Card" selected="@(item.PaymentMethod == PaymentMethod.Card ? "selected" : null)">Thẻ</option>
                             </select>
                             <button class="btn btn-sm btn-primary">Lưu</button>
                         </form>
