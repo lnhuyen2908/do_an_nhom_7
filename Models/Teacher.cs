@@ -26,6 +26,14 @@ public class Teacher
     [Display(Name = "Chuyên môn")]
     public string Specialty { get; set; } = string.Empty;
 
+    [StringLength(200)]
+    [Display(Name = "Trình độ")]
+    public string Degree { get; set; } = string.Empty;
+
+    [StringLength(500)]
+    [Display(Name = "Chứng chỉ")]
+    public string Certifications { get; set; } = string.Empty;
+
     public UserAccount? UserAccount { get; set; }
     public ICollection<CourseClass> CourseClasses { get; set; } = new List<CourseClass>();
     public ICollection<CourseLecture> CourseLectures { get; set; } = new List<CourseLecture>();

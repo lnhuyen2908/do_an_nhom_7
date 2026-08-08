@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Xác minh OTP";
+}
+
+<section class="auth-page">
+    <div class="auth-visual" aria-hidden="true">
+        <div class="auth-visual-content">
+            <span class="auth-brand-mark">Xác minh Gmail</span>
+            <p>Mã OTP giúp trung tâm hạn chế tài khoản ảo và bảo vệ thông tin học viên.</p>
+        </div>
+    </div>
+
+    <div class="auth-form-panel">
+        <form class="auth-form" asp-action="VerifyOtp" method="post">
+            <div class="auth-heading">
+                <span class="eyebrow">Bảo mật tài khoản</span>
+                <h1>Nhập mã OTP</h1>
+                <p>Mã xác minh đã gửi đến @ViewBag.Email.</p>
+            </div>
+
+            @if (ViewBag.Error is string error)
+            {
+                <div class="alert alert-danger" role="alert">@error</div>
+            }
+
+            <div class="auth-field">
+                <label class="form-label" for="otp">Mã OTP</label>
+                <input class="form-control" id="otp" name="otp" inputmode="numeric"
+                       minlength="6" maxlength="6" autocomplete="one-time-code" required />
+            </div>
+
+            <button class="btn btn-primary btn-auth-submit" type="submit">Xác minh</button>
+            <div class="auth-switch">
+                <a asp-action="Register">Đăng ký lại</a>
+            </div>
+        </form>
+        <form asp-action="ResendOtp" method="post" class="mt-3">
+            <button class="btn btn-outline-primary w-100" type="submit">Gửi lại mã OTP Gmail</button>
+        </form>
+    </div>
+</section>

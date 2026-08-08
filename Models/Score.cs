@@ -33,6 +33,17 @@ public class Score
     [Display(Name = "Kết quả")]
     public string Result => AverageScore >= 5 ? "Đạt" : "Chưa đạt";
 
+    [NotMapped]
+    [Display(Name = "Xếp loại")]
+    public string Classification => AverageScore switch
+    {
+        >= 9.0 => "Xuất sắc",
+        >= 8.0 => "Giỏi",
+        >= 6.5 => "Khá",
+        >= 5.0 => "Trung bình",
+        _ => "Yếu"
+    };
+
     [Display(Name = "Học viên")]
     public Student Student { get; set; } = null!;
     [Display(Name = "Lớp học")]

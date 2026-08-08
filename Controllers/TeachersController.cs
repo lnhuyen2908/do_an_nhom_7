@@ -23,9 +23,33 @@ namespace web_do_an1.Controllers
         }
 
         // GET: Teachers
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? keyword, int page = 1)
         {
-            return View(await _context.Teachers.ToListAsync());
+            const int pageSize = 10;
+            keyword = keyword?.Trim();
+            page = Math.Max(page, 1);
+            var query = _context.Teachers.AsNoTracking().AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(x => x.Code.Contains(keyword)
+                    || x.FullName.Contains(keyword)
+                    || x.Email.Contains(keyword)
+                    || x.Phone.Contains(keyword)
+                    || x.Specialty.Contains(keyword)
+                    || x.Certifications.Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Min(page, totalPages);
+            ViewBag.Keyword = keyword;
+            ViewBag.Page = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            return View(await query.OrderBy(x => x.Code)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync());
         }
 
         // GET: Teachers/Details/5
@@ -57,7 +81,7 @@ namespace web_do_an1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Code,FullName,Email,Phone,Specialty")] Teacher teacher)
+        public async Task<IActionResult> Create([Bind("Id,Code,FullName,Email,Phone,Specialty,Degree,Certifications")] Teacher teacher)
         {
             NormalizeTeacher(teacher);
             ModelState.Clear();
@@ -95,7 +119,7 @@ namespace web_do_an1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Code,FullName,Email,Phone,Specialty")] Teacher teacher)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Code,FullName,Email,Phone,Specialty,Degree,Certifications")] Teacher teacher)
         {
             if (id != teacher.Id)
             {
@@ -191,7 +215,7 @@ namespace web_do_an1.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(
-            [Bind("FullName,Email,Phone,Specialty")] Teacher model)
+            [Bind("FullName,Email,Phone,Specialty,Degree,Certifications")] Teacher model)
         {
             if (!User.IsInRole("Teacher")
                 || !int.TryParse(User.FindFirstValue("TeacherId"), out var teacherId))
@@ -208,6 +232,7 @@ namespace web_do_an1.Controllers
             model.Code = teacher.Code;
             ModelState.Clear();
             TryValidateModel(model);
+            await ValidateTeacherAsync(model, teacherId);
             if (!ModelState.IsValid)
             {
                 model.Id = teacher.Id;
@@ -218,6 +243,8 @@ namespace web_do_an1.Controllers
             teacher.Email = model.Email.Trim();
             teacher.Phone = model.Phone.Trim();
             teacher.Specialty = model.Specialty.Trim();
+            teacher.Degree = model.Degree.Trim();
+            teacher.Certifications = model.Certifications.Trim();
             var account = await _context.UserAccounts
                 .FirstOrDefaultAsync(x => x.TeacherId == teacherId);
             if (account is not null)
@@ -238,6 +265,8 @@ namespace web_do_an1.Controllers
             teacher.Email = teacher.Email.Trim();
             teacher.Phone = teacher.Phone.Trim();
             teacher.Specialty = teacher.Specialty.Trim();
+            teacher.Degree = teacher.Degree.Trim();
+            teacher.Certifications = teacher.Certifications.Trim();
         }
 
         private async Task ValidateTeacherAsync(Teacher teacher, int? currentId = null)
@@ -252,6 +281,22 @@ namespace web_do_an1.Controllers
                     x.Id != currentId && x.Email == teacher.Email))
             {
                 ModelState.AddModelError(nameof(Teacher.Email), "Email đã được sử dụng.");
+            }
+            else if (await _context.UserAccounts.AnyAsync(x =>
+                         x.TeacherId != currentId && x.Email == teacher.Email))
+            {
+                ModelState.AddModelError(nameof(Teacher.Email), "Email đã được sử dụng bởi tài khoản khác.");
+            }
+
+            if (await _context.Teachers.AnyAsync(x =>
+                    x.Id != currentId && x.Phone == teacher.Phone))
+            {
+                ModelState.AddModelError(nameof(Teacher.Phone), "Số điện thoại đã được sử dụng.");
+            }
+            else if (await _context.UserAccounts.AnyAsync(x =>
+                         x.TeacherId != currentId && x.Phone == teacher.Phone))
+            {
+                ModelState.AddModelError(nameof(Teacher.Phone), "Số điện thoại đã được sử dụng bởi tài khoản khác.");
             }
         }
 

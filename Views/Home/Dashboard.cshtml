@@ -1,43 +1,71 @@
 @using web_do_an1.Models
 @{
-    ViewData["Title"] = "Tổng quan vận hành";
+    ViewData["Title"] = "Bảng điều khiển";
     var recent = ViewBag.RecentEnrollments as IEnumerable<Enrollment> ?? [];
     var expected = (decimal)ViewBag.ExpectedTuition;
     var collected = (decimal)ViewBag.CollectedTuition;
+    var collectionRatio = expected > 0 ? Math.Min(100m, collected / expected * 100m) : 0m;
 }
 
-<section class="page-heading">
+<section class="admin-page-heading">
     <div>
-        <p class="section-kicker">Quản trị trung tâm</p>
+        <span class="admin-eyebrow">BẢNG ĐIỀU KHIỂN · HÔM NAY</span>
         <h1>Tổng quan vận hành</h1>
-        <p>Theo dõi quy mô đào tạo, đăng ký và tình hình thu học phí.</p>
+        <p>Theo dõi nhanh quy mô đào tạo, đăng ký và dòng tiền của trung tâm.</p>
+    </div>
+    <span class="admin-date-chip">● Hệ thống đang hoạt động</span>
+</section>
+
+<section class="admin-stat-grid" aria-label="Chỉ số tổng quan">
+    <article class="admin-stat-card admin-stat-blue"><span class="admin-stat-icon">♙</span><div><small>Học viên</small><strong>@ViewBag.StudentCount</strong><span>Hồ sơ đang quản lý</span></div></article>
+    <article class="admin-stat-card admin-stat-violet"><span class="admin-stat-icon">♙</span><div><small>Giáo viên</small><strong>@ViewBag.TeacherCount</strong><span>Đội ngũ giảng dạy</span></div></article>
+    <article class="admin-stat-card admin-stat-teal"><span class="admin-stat-icon">▦</span><div><small>Khóa học</small><strong>@ViewBag.CourseCount</strong><span>Chương trình đào tạo</span></div></article>
+    <article class="admin-stat-card admin-stat-orange"><span class="admin-stat-icon">◫</span><div><small>Lớp đang quản lý</small><strong>@ViewBag.ClassCount</strong><span>Lớp học hiện có</span></div></article>
+    <article class="admin-stat-card admin-stat-warning"><span class="admin-stat-icon">!</span><div><small>Chờ duyệt</small><strong>@ViewBag.PendingEnrollmentCount</strong><span>Đăng ký cần xử lý</span></div></article>
+    <article class="admin-stat-card admin-stat-green"><span class="admin-stat-icon">✓</span><div><small>Đã duyệt</small><strong>@ViewBag.ApprovedEnrollmentCount</strong><span>Đăng ký hợp lệ</span></div></article>
+</section>
+
+<section class="admin-quick-actions" aria-label="Thao tác nhanh">
+    <div>
+        <span class="admin-eyebrow">THAO TÁC NHANH</span>
+        <h2>Việc cần làm hôm nay</h2>
+    </div>
+    <div class="admin-action-grid">
+        <a class="admin-action-card" asp-controller="Enrollments" asp-action="Index"><span>✓</span><strong>Duyệt đăng ký</strong><small>@ViewBag.PendingEnrollmentCount hồ sơ chờ xử lý</small></a>
+        <a class="admin-action-card" asp-controller="CourseClasses" asp-action="Create"><span>＋</span><strong>Thêm lớp học</strong><small>Tạo lịch khai giảng mới</small></a>
+        <a class="admin-action-card" asp-controller="Reports" asp-action="QuarterlyRevenue"><span>▥</span><strong>Xuất báo cáo</strong><small>Xem và tải báo cáo doanh thu</small></a>
     </div>
 </section>
 
-<section class="dashboard-grid">
-    <article class="stat-card"><span>Học viên</span><strong>@ViewBag.StudentCount</strong></article>
-    <article class="stat-card"><span>Giáo viên</span><strong>@ViewBag.TeacherCount</strong></article>
-    <article class="stat-card"><span>Khóa học</span><strong>@ViewBag.CourseCount</strong></article>
-    <article class="stat-card"><span>Lớp đang quản lý</span><strong>@ViewBag.ClassCount</strong></article>
-    <article class="stat-card accent"><span>Đăng ký chờ duyệt</span><strong>@ViewBag.PendingEnrollmentCount</strong></article>
-    <article class="stat-card"><span>Đăng ký đã duyệt</span><strong>@ViewBag.ApprovedEnrollmentCount</strong></article>
-    <article class="stat-card wide"><span>Học phí đã thu</span><strong>@collected.ToString("N0") đ</strong><small>/ @expected.ToString("N0") đ dự kiến</small></article>
+<section class="admin-dashboard-columns">
+    <article class="admin-panel admin-finance-panel">
+        <div class="admin-panel-heading"><div><span class="admin-eyebrow">TÀI CHÍNH</span><h2>Tiến độ thu học phí</h2></div><span class="admin-panel-badge">@(collectionRatio.ToString("0.#"))%</span></div>
+        <div class="admin-finance-total"><strong>@collected.ToString("N0") đ</strong><span>/ @expected.ToString("N0") đ dự kiến</span></div>
+        <div class="admin-progress" role="progressbar" aria-valuenow="@collectionRatio" aria-valuemin="0" aria-valuemax="100"><span style="width: @(collectionRatio.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span></div>
+        <div class="admin-finance-legend"><span><i class="is-collected"></i>Đã thu</span><span><i class="is-expected"></i>Còn lại dự kiến</span></div>
+    </article>
+
+    <article class="admin-panel admin-focus-panel">
+        <div class="admin-panel-heading"><div><span class="admin-eyebrow">CẦN CHÚ Ý</span><h2>Ưu tiên vận hành</h2></div><span class="admin-focus-dot">!</span></div>
+        <p>Các hồ sơ chờ duyệt cần được xử lý sớm để học viên nhận lịch học đúng hạn.</p>
+        <a class="admin-text-link" asp-controller="Enrollments" asp-action="Index">Mở danh sách đăng ký <span aria-hidden="true">→</span></a>
+    </article>
 </section>
 
-<section class="content-card">
-    <div class="section-title-row">
-        <div><p class="section-kicker">Hoạt động gần đây</p><h2>Đăng ký đã duyệt & hoàn tất học phí</h2></div>
-        <a class="btn btn-primary" asp-controller="Enrollments" asp-action="Index">Xử lý đăng ký</a>
+<section class="admin-panel admin-recent-panel">
+    <div class="admin-panel-heading">
+        <div><span class="admin-eyebrow">HOẠT ĐỘNG GẦN ĐÂY</span><h2>Đăng ký đã duyệt & hoàn tất học phí</h2></div>
+        <a class="admin-text-link" asp-controller="Enrollments" asp-action="Index">Xem tất cả <span aria-hidden="true">→</span></a>
     </div>
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle admin-table">
             <thead><tr><th>Học viên</th><th>Khóa học</th><th>Học phí</th><th>Ngày đăng ký</th><th>Trạng thái</th></tr></thead>
             <tbody>
             @foreach (var item in recent)
             {
                 var statusText = item.Status switch { EnrollmentState.Pending => "Chờ duyệt", EnrollmentState.Approved => "Đã duyệt", _ => "Đã hủy" };
                 <tr>
-                    <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
+                    <td><strong>@item.Student.FullName</strong><small class="d-block">@item.Student.Code</small></td>
                     <td>@item.Course.Name</td>
                     <td>@item.Course.Tuition.ToString("N0") đ</td>
                     <td>@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>

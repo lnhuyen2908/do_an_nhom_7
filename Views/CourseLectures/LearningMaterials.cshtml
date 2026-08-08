@@ -7,6 +7,6 @@
 <div class="resource-grid">
 @foreach(var item in Model)
 {
-    <article class="resource-card"><span class="badge text-bg-light">@item.Course.Code</span><h2>@item.Title</h2><p>@item.Course.Name</p><p>Giáo viên: <strong>@item.Teacher.FullName</strong></p><small>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm") · @item.FileName</small><div class="mt-3"><a class="btn btn-primary" href="@item.FileUrl" target="_blank" rel="noopener">Mở tài liệu</a></div></article>
+    <article class="resource-card"><span class="badge text-bg-light">@item.Course.Code</span><h2>@item.Title</h2><p>@item.Course.Name</p><p>Giáo viên: <strong>@item.Teacher.FullName</strong></p><small>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm") · @item.FileName</small><div class="action-strip mt-3">@if(!string.IsNullOrWhiteSpace(item.FileUrl)){<a class="btn btn-primary" href="@item.FileUrl" target="_blank" rel="noopener">Mở tài liệu</a>}@if(!string.IsNullOrWhiteSpace(item.YouTubeUrl)){<a class="btn btn-outline-primary" href="@item.YouTubeUrl" target="_blank" rel="noopener">YouTube</a>}</div></article>
 }
 </div>

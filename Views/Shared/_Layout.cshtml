@@ -1,5 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
+@using Microsoft.EntityFrameworkCore
+@inject web_do_an1.Data.EnglishCenterDbContext DbContext
 @{
     var roleName = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
     var roleDisplay = roleName switch
@@ -10,8 +12,16 @@
         "Student" => "Học viên",
         _ => string.Empty
     };
+    var isBackOffice = User.IsInRole("Admin") || User.IsInRole("Staff");
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    var unreadNotifications = 0;
+    if (User.Identity?.IsAuthenticated == true
+        && int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var accountId))
+    {
+        unreadNotifications = await DbContext.Notifications.AsNoTracking()
+            .CountAsync(x => x.UserAccountId == accountId && !x.IsRead);
+    }
 }
 <head>
     <meta charset="utf-8" />
@@ -37,7 +47,7 @@
     <header>
         <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom app-nav">
             <div class="container-fluid px-3 px-xl-4">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="@(isBackOffice ? "Dashboard" : "Index")">
                     <span class="brand-mark" aria-hidden="true">E</span>
                     <span>Trung tâm Tiếng Anh</span>
                 </a>
@@ -50,7 +60,14 @@
                 <div class="collapse navbar-collapse" id="main-navbar">
                     <ul class="navbar-nav me-auto align-items-xl-center">
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            @if (isBackOffice)
+                            {
+                                <a class="nav-link @(currentController == "Home" && currentAction == "Dashboard" ? "active" : "")" asp-controller="Home" asp-action="Dashboard">Bảng điều khiển</a>
+                            }
+                            else
+                            {
+                                <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            }
                         </li>
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "Courses" ? "active" : "")" asp-controller="Courses" asp-action="Index">Khóa học</a>
@@ -61,9 +78,6 @@
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Home" asp-action="Dashboard">Tổng quan</a>
-                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="admin-training-menu"
                                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -98,14 +112,12 @@
                                 <ul class="dropdown-menu" aria-labelledby="admin-finance-menu">
                                     <li><a class="dropdown-item" asp-controller="Payments" asp-action="Index">Quản lý học phí</a></li>
                                     <li><a class="dropdown-item" asp-controller="PaymentTransactions" asp-action="Index">Lịch sử giao dịch</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="QuarterlyRevenue">Báo cáo doanh thu</a></li>
                                 </ul>
                             </li>
                         }
                         else if (User.IsInRole("Staff"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Home" asp-action="Dashboard">Thống kê vận hành</a>
-                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="staff-training-menu"
                                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -138,6 +150,7 @@
                                 <ul class="dropdown-menu" aria-labelledby="staff-finance-menu">
                                     <li><a class="dropdown-item" asp-controller="Payments" asp-action="Index">Quản lý học phí</a></li>
                                     <li><a class="dropdown-item" asp-controller="PaymentTransactions" asp-action="Index">Lịch sử giao dịch</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="QuarterlyRevenue">Báo cáo doanh thu</a></li>
                                 </ul>
                             </li>
                         }
@@ -155,6 +168,7 @@
                                 <ul class="dropdown-menu" aria-labelledby="student-learning-menu">
                                     <li><a class="dropdown-item" asp-controller="Enrollments" asp-action="MyEnrollments">Khóa học của tôi</a></li>
                                     <li><a class="dropdown-item" asp-controller="CourseClasses" asp-action="MySchedule">Lịch học</a></li>
+                                    <li><a class="dropdown-item" asp-controller="AttendanceRecords" asp-action="MyAttendance">Điểm danh</a></li>
                                     <li><a class="dropdown-item" asp-controller="Scores" asp-action="MyScores">Kết quả học tập</a></li>
                                     <li><a class="dropdown-item" asp-controller="CourseLectures" asp-action="LearningMaterials">Bài giảng</a></li>
                                     <li><a class="dropdown-item" asp-controller="SavedCourses" asp-action="MySavedCourses">Khóa học đã lưu</a></li>
@@ -176,6 +190,17 @@
                         }
                         else
                         {
+                            <li class="nav-item">
+                                <a class="nav-link notification-link @(currentController == "Notifications" ? "active" : "")"
+                                   asp-controller="Notifications" asp-action="Index"
+                                   aria-label="Thông báo">
+                                    <span aria-hidden="true">&#128276;</span>
+                                    @if (unreadNotifications > 0)
+                                    {
+                                        <strong>@unreadNotifications</strong>
+                                    }
+                                </a>
+                            </li>
                             <li class="nav-item dropdown account-menu">
                                 <a class="nav-link dropdown-toggle account-menu-toggle" href="#"
                                    id="account-menu" role="button" data-bs-toggle="dropdown"
@@ -257,6 +282,9 @@
     </footer>
 
     <section class="dictionary-widget" data-dictionary-widget>
+        @* Nút liên hệ Zalo nằm trong Layout nên xuất hiện trên mọi trang dùng Layout này.
+           href mở số Zalo; target="_blank" mở tab mới; rel="noopener" tăng an toàn.
+           aria-label hỗ trợ phần mềm đọc màn hình; asp-append-version làm mới bộ nhớ đệm của ảnh. *@
         <a class="zalo-contact-widget"
            href="https://zalo.me/0865859102"
            target="_blank"

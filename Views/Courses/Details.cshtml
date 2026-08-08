@@ -1,10 +1,12 @@
 @model Course
 @{
     ViewData["Title"] = Model.Name;
+    // Model của trang là một Course do CoursesController.Details gửi sang.
     var canManage = User.IsInRole("Admin") || User.IsInRole("Staff");
+    // seats là từ điển mã lớp -> số học viên đã được duyệt vào lớp.
     var seats = ViewBag.ClassSeats as IDictionary<int, int> ?? new Dictionary<int, int>();
-    var isSaved = ViewBag.IsSaved is true;
-    var hasEnrollment = ViewBag.HasEnrollment is true;
+    var isSaved = ViewBag.IsSaved is true; // Cho biết học viên đã lưu khóa học này chưa.
+    var hasEnrollment = ViewBag.HasEnrollment is true; // Cho biết học viên đã đăng ký khóa học chưa.
     var courseName = Model.Name.ToLowerInvariant();
     var courseFocus = "nền tảng tiếng Anh";
     var outcomeText = "tự tin sử dụng tiếng Anh trong học tập, công việc và giao tiếp hằng ngày";
@@ -175,9 +177,29 @@
         </div>
         <div class="mini-row">
             <strong>Giáo viên đồng hành</strong>
-            <span>Được hướng dẫn và nhận phản hồi trong suốt khóa học.</span>
+            <span>Được hướng dẫn bởi giáo viên có chứng chỉ và kinh nghiệm phù hợp.</span>
         </div>
     </aside>
+</section>
+
+<section class="course-section">
+    <p class="section-kicker">Đội ngũ giảng dạy</p>
+    <h2>Thông tin giáo viên uy tín</h2>
+    <div class="teacher-trust-grid">
+        @foreach (var teacher in Model.CourseClasses
+            .Where(x => x.Teacher is not null)
+            .Select(x => x.Teacher)
+            .GroupBy(x => x.Id)
+            .Select(x => x.First()))
+        {
+            <article class="teacher-trust-card">
+                <strong>@teacher.FullName</strong>
+                <span>@teacher.Specialty</span>
+                <p>@(string.IsNullOrWhiteSpace(teacher.Degree) ? "Trình độ đang cập nhật" : teacher.Degree)</p>
+                <small>@(string.IsNullOrWhiteSpace(teacher.Certifications) ? "Chứng chỉ đang cập nhật" : teacher.Certifications)</small>
+            </article>
+        }
+    </div>
 </section>
 
 <section class="course-detail-content">
@@ -257,24 +279,50 @@
     else
     {
         <div class="class-choice-grid">
+        @* Lặp qua các lớp của khóa học, sắp xếp theo ngày bắt đầu tăng dần. *@
         @foreach (var item in Model.CourseClasses.OrderBy(x => x.StartDate))
         {
+            // TryGetValue tìm sĩ số của lớp; nếu chưa có dữ liệu thì dùng 0.
             var occupied = seats.TryGetValue(item.Id, out var value) ? value : 0;
+            var canRegisterClass = item.CanRegister && occupied < item.Capacity;
             <article class="class-choice-card">
                 <div><span class="badge text-bg-light">@item.Code</span><h3>@item.Schedule</h3></div>
+                <span class="status-pill status-class status-class-@(item.EffectiveStatus.ToString().ToLowerInvariant())">@DisplayStatus(item.EffectiveStatus)</span>
                 <p>Giáo viên: <strong>@item.Teacher.FullName</strong></p>
-                <p>Phòng: @item.Room · Bắt đầu: @item.StartDate.ToString("dd/MM/yyyy")</p>
+                <p>
+                    Phòng: @item.Room · Bắt đầu: @item.StartDate.ToString("dd/MM/yyyy")
+                    · Kết thúc: @(item.EndDate.HasValue ? item.EndDate.Value.ToString("dd/MM/yyyy") : "Đang cập nhật")
+                </p>
                 <p>Sĩ số: @occupied/@item.Capacity</p>
+                @* Chỉ hiện nút đăng ký khi người dùng là học viên và chưa đăng ký khóa học này. *@
                 @if (User.IsInRole("Student") && !hasEnrollment)
                 {
+                    @* Form POST này gọi hàm Register trong CoursesController. *@
                     <form asp-action="Register" method="post">
+                        @* Input hidden gửi mã khóa học nhưng không hiển thị ô nhập. *@
                         <input type="hidden" name="courseId" value="@Model.Id" />
+                        @* Gửi mã lớp mà học viên đã chọn. *@
                         <input type="hidden" name="courseClassId" value="@item.Id" />
-                        <button class="btn btn-primary" type="submit" disabled="@(occupied >= item.Capacity)">Đăng ký lớp này</button>
+                        @* disabled khóa nút khi lớp đã đủ sức chứa. *@
+                        <button class="btn btn-primary" type="submit" disabled="@(!canRegisterClass)">Đăng ký lớp này</button>
                     </form>
+                    @if (!canRegisterClass)
+                    {
+                        <small class="text-muted">Lớp hiện không nhận đăng ký.</small>
+                    }
                 }
             </article>
         }
         </div>
     }
 </section>
+
+@functions {
+    private static string DisplayStatus(CourseClassStatus status) => status switch
+    {
+        CourseClassStatus.Upcoming => "Sắp khai giảng",
+        CourseClassStatus.Open => "Đang mở",
+        CourseClassStatus.Locked => "Đã khóa lớp",
+        _ => "Đã đóng"
+    };
+}

@@ -1,5 +1,8 @@
 ﻿@{
-    Layout = "_Layout";
+    // Admin/NVĐT dùng chung khu vận hành (sidebar + topbar) trên mọi chức năng.
+    Layout = User.IsInRole("Admin") || User.IsInRole("Staff")
+        ? "_AdminLayout"
+        : "_Layout";
 }
 
 

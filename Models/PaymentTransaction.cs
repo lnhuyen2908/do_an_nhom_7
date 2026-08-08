@@ -24,6 +24,16 @@ public class PaymentTransaction
     [Display(Name = "Thời gian ghi nhận")]
     public DateTime PaidAt { get; set; } = DateTime.Now;
 
+    [Display(Name = "Trạng thái")]
+    public PaymentTransactionState Status { get; set; } = PaymentTransactionState.Pending;
+
+    [Display(Name = "Thời gian duyệt")]
+    public DateTime? ApprovedAt { get; set; }
+
+    [StringLength(100)]
+    [Display(Name = "Người duyệt")]
+    public string ApprovedBy { get; set; } = string.Empty;
+
     [Required, StringLength(100)]
     [Display(Name = "Người ghi nhận")]
     public string RecordedBy { get; set; } = string.Empty;

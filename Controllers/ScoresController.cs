@@ -18,12 +18,43 @@ public class ScoresController : Controller
     }
 
     [Authorize(Roles = "Admin,Staff")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? keyword, int? classId, int page = 1)
     {
-        return View(await _context.Scores.AsNoTracking()
+        const int pageSize = 10;
+        keyword = keyword?.Trim();
+        page = Math.Max(page, 1);
+        var query = _context.Scores.AsNoTracking()
             .Include(x => x.Student)
             .Include(x => x.CourseClass).ThenInclude(x => x.Course)
-            .OrderBy(x => x.CourseClass.Code).ThenBy(x => x.Student.Code)
+            .AsQueryable();
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(x => x.Student.Code.Contains(keyword)
+                || x.Student.FullName.Contains(keyword)
+                || x.CourseClass.Code.Contains(keyword)
+                || x.CourseClass.Course.Name.Contains(keyword));
+        }
+        if (classId.HasValue)
+        {
+            query = query.Where(x => x.CourseClassId == classId.Value);
+        }
+
+        var totalItems = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        page = Math.Min(page, totalPages);
+        ViewBag.Keyword = keyword;
+        ViewBag.ClassId = classId;
+        ViewBag.Classes = await _context.CourseClasses.AsNoTracking()
+            .Include(x => x.Course)
+            .OrderBy(x => x.Code)
+            .ToListAsync();
+        ViewBag.Page = page;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.TotalItems = totalItems;
+
+        return View(await query.OrderBy(x => x.CourseClass.Code).ThenBy(x => x.Student.Code)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync());
     }
 

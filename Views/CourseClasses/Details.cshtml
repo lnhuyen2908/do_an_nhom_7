@@ -32,7 +32,19 @@
             @Html.DisplayNameFor(model => model.StartDate)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartDate)
+            @Model.StartDate.ToString("dd/MM/yyyy")
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.EndDate)
+        </dt>
+        <dd class = "col-sm-10">
+            @(Model.EndDate.HasValue ? Model.EndDate.Value.ToString("dd/MM/yyyy") : "Chưa đặt")
+        </dd>
+        <dt class = "col-sm-2">
+            Trạng thái
+        </dt>
+        <dd class = "col-sm-10">
+            <span class="status-pill status-class status-class-@(Model.EffectiveStatus.ToString().ToLowerInvariant())">@DisplayStatus(Model.EffectiveStatus)</span>
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Capacity)
@@ -54,6 +66,16 @@
         </dd>
     </dl>
 </div>
+
+@functions {
+    private static string DisplayStatus(CourseClassStatus status) => status switch
+    {
+        CourseClassStatus.Upcoming => "Sắp khai giảng",
+        CourseClassStatus.Open => "Đang mở",
+        CourseClassStatus.Locked => "Đã khóa lớp",
+        _ => "Đã đóng"
+    };
+}
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Sửa</a> |
     <a asp-action="Index">Quay lại danh sách</a>

@@ -5,22 +5,28 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using web_do_an1.Data;
 using web_do_an1.Models;
+using web_do_an1.Services;
 
 namespace web_do_an1.Controllers;
 
-[Authorize]
+[Authorize] // Mọi chức năng trong controller đều yêu cầu đã đăng nhập.
 public class EnrollmentsController : Controller
 {
     private readonly EnglishCenterDbContext _context;
+    private readonly NotificationService _notificationService;
 
-    public EnrollmentsController(EnglishCenterDbContext context)
+    public EnrollmentsController(EnglishCenterDbContext context, NotificationService notificationService)
     {
         _context = context;
+        _notificationService = notificationService;
     }
 
     [Authorize(Roles = "Admin,Staff")]
-    public async Task<IActionResult> Index(EnrollmentState? status)
+    public async Task<IActionResult> Index(EnrollmentState? status, string? keyword, int page = 1)
     {
+        const int pageSize = 10;
+        keyword = keyword?.Trim();
+        page = Math.Max(page, 1);
         var query = _context.Enrollments.AsNoTracking()
             .Include(x => x.Student)
             .Include(x => x.Course)
@@ -30,15 +36,33 @@ public class EnrollmentsController : Controller
         {
             query = query.Where(x => x.Status == status.Value);
         }
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(x => x.Student.Code.Contains(keyword)
+                || x.Student.FullName.Contains(keyword)
+                || x.Course.Code.Contains(keyword)
+                || x.Course.Name.Contains(keyword)
+                || (x.CourseClass != null && x.CourseClass.Code.Contains(keyword)));
+        }
 
         ViewBag.Status = status;
+        ViewBag.Keyword = keyword;
         ViewBag.Classes = await _context.CourseClasses.AsNoTracking()
             .Include(x => x.Course).OrderBy(x => x.Code).ToListAsync();
         ViewBag.ClassSeats = await _context.Enrollments.AsNoTracking()
             .Where(x => x.CourseClassId.HasValue && x.Status == EnrollmentState.Approved)
             .GroupBy(x => x.CourseClassId!.Value)
             .ToDictionaryAsync(x => x.Key, x => x.Count());
-        return View(await query.OrderByDescending(x => x.RegisteredAt).ToListAsync());
+        var totalItems = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        page = Math.Min(page, totalPages);
+        ViewBag.Page = page;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.TotalItems = totalItems;
+        return View(await query.OrderByDescending(x => x.RegisteredAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync());
     }
 
     [Authorize(Roles = "Admin,Staff")]
@@ -83,6 +107,12 @@ public class EnrollmentsController : Controller
                 if (courseClass is null || courseClass.CourseId != enrollment.CourseId)
                 {
                     TempData["ErrorMessage"] = "Lớp không thuộc khóa học đã đăng ký.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (!courseClass.CanRegister)
+                {
+                    TempData["ErrorMessage"] = $"Lớp {courseClass.Code} hiện đã khóa hoặc đã đóng.";
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -131,34 +161,53 @@ public class EnrollmentsController : Controller
             }
 
             await _context.SaveChangesAsync();
+            var accountId = await _context.UserAccounts.AsNoTracking()
+                .Where(x => x.StudentId == enrollment.StudentId && x.IsActive)
+                .Select(x => (int?)x.Id)
+                .FirstOrDefaultAsync();
+            if (accountId.HasValue)
+            {
+                var title = status == EnrollmentState.Approved
+                    ? "Đăng ký khóa học đã được duyệt"
+                    : status == EnrollmentState.Cancelled
+                        ? "Đăng ký khóa học đã bị hủy"
+                        : "Đăng ký khóa học đang chờ duyệt";
+                await _notificationService.NotifyUserAsync(
+                    accountId.Value,
+                    title,
+                    "Trạng thái đăng ký khóa học của bạn vừa được cập nhật.",
+                    status == EnrollmentState.Approved
+                        ? Url.Action("MyPayments", "Payments") ?? string.Empty
+                        : Url.Action(nameof(MyEnrollments), "Enrollments") ?? string.Empty);
+            }
             await transaction.CommitAsync();
             TempData["SuccessMessage"] = "Đã cập nhật trạng thái đăng ký.";
             return RedirectToAction(nameof(Index));
         });
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = "Student")] // Chỉ học viên được xem danh sách đăng ký của chính mình.
     public async Task<IActionResult> MyEnrollments()
     {
-        var studentId = CurrentStudentId();
+        var studentId = CurrentStudentId(); // Lấy mã học viên từ claim trong cookie đăng nhập.
         if (!studentId.HasValue)
         {
             return Forbid();
         }
 
         return View(await _context.Enrollments.AsNoTracking()
-            .Where(x => x.StudentId == studentId.Value)
-            .Include(x => x.Course)
-            .Include(x => x.CourseClass)
-                .ThenInclude(x => x!.Teacher)
-            .Include(x => x.Payment)
-            .OrderByDescending(x => x.RegisteredAt)
-            .ToListAsync());
+            .Where(x => x.StudentId == studentId.Value) // Chỉ lấy dữ liệu của học viên đang đăng nhập.
+            .Include(x => x.Course) // Lấy kèm thông tin khóa học.
+            .Include(x => x.CourseClass) // Lấy kèm lớp học đã chọn.
+                .ThenInclude(x => x!.Teacher) // Lấy tiếp giáo viên của lớp.
+            .Include(x => x.Payment) // Lấy kèm khoản học phí nếu đăng ký đã được duyệt.
+            .OrderByDescending(x => x.RegisteredAt) // Đăng ký mới nhất hiển thị trước.
+            .ToListAsync()); // Chạy truy vấn và gửi danh sách sang View MyEnrollments.
     }
 
-    [Authorize(Roles = "Student")]
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Student")] // Chỉ học viên mới được tự hủy đăng ký.
+    [HttpPost] // Nhận yêu cầu từ nút Hủy đăng ký.
+    [ValidateAntiForgeryToken] // Chống yêu cầu giả mạo.
     public async Task<IActionResult> Cancel(int id)
     {
         //var studentId = CurrentStudentId();
@@ -180,7 +229,7 @@ public class EnrollmentsController : Controller
         //TempData["SuccessMessage"] = "Đã hủy đăng ký.";
         //return RedirectToAction(nameof(MyEnrollments));
 
-        var studentId = CurrentStudentId();
+        var studentId = CurrentStudentId(); // Xác định học viên đang thao tác.
         if (!studentId.HasValue)
         {
             return Forbid();
@@ -193,8 +242,9 @@ public class EnrollmentsController : Controller
                 await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
             var enrollment = await _context.Enrollments
-                .Include(x => x.Payment)
+                .Include(x => x.Payment) // Lấy kèm học phí để không hủy nhầm đăng ký đã thanh toán.
                 .FirstOrDefaultAsync(x =>
+                    // Phải đúng phiếu, đúng chủ sở hữu và vẫn đang Chờ duyệt.
                     x.Id == id && x.StudentId == studentId.Value
                     && x.Status == EnrollmentState.Pending);
 
@@ -212,22 +262,23 @@ public class EnrollmentsController : Controller
                 return RedirectToAction(nameof(MyEnrollments));
             }
 
-            enrollment.Status = EnrollmentState.Cancelled;
-            enrollment.CourseClassId = null;
+            enrollment.Status = EnrollmentState.Cancelled; // Chuyển trạng thái sang Đã hủy.
+            enrollment.CourseClassId = null; // Gỡ lớp đã chọn khỏi đăng ký bị hủy.
 
             if (enrollment.Payment is not null)
             {
                 enrollment.Payment.Status = PaymentState.Cancelled;
             }
 
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            await _context.SaveChangesAsync(); // Cập nhật dữ liệu xuống database.
+            await transaction.CommitAsync(); // Xác nhận giao dịch hủy.
 
             TempData["SuccessMessage"] = "Đã hủy đăng ký.";
             return RedirectToAction(nameof(MyEnrollments));
         });
     }
 
+    // Hàm phụ đọc claim StudentId; trả null nếu claim không tồn tại hoặc không đổi được thành số.
     private int? CurrentStudentId()
     {
         return int.TryParse(User.FindFirstValue("StudentId"), out var id) ? id : null;

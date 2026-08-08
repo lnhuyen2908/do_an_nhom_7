@@ -16,13 +16,18 @@ public class CourseLecture
     [Display(Name = "Tiêu đề")]
     public string Title { get; set; } = string.Empty;
 
-    [Required, StringLength(255)]
+    [StringLength(255)]
     [Display(Name = "Tên tệp")]
     public string FileName { get; set; } = string.Empty;
 
-    [Required, StringLength(500)]
+    [StringLength(500)]
     [Display(Name = "Đường dẫn tệp")]
     public string FileUrl { get; set; } = string.Empty;
+
+    [StringLength(500)]
+    [Url]
+    [Display(Name = "Link YouTube")]
+    public string YouTubeUrl { get; set; } = string.Empty;
 
     [Display(Name = "Ngày tải lên")]
     public DateTime UploadedAt { get; set; } = DateTime.Now;

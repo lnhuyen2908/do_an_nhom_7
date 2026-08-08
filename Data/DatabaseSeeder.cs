@@ -1,11 +1,12 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using web_do_an1.Models;
 
 namespace web_do_an1.Data;
 
+// Seeder = bộ tạo dữ liệu mẫu. Class này chạy khi ứng dụng khởi động lần đầu hoặc cần bổ sung dữ liệu thiếu.
 public class DatabaseSeeder
 {
-    private const string DefaultPassword = "123456";
+    private const string DefaultPassword = "123456"; // Mật khẩu chung chỉ dùng cho tài khoản dữ liệu mẫu.
     private readonly EnglishCenterDbContext _context;
 
     public DatabaseSeeder(EnglishCenterDbContext context)
@@ -13,16 +14,18 @@ public class DatabaseSeeder
         _context = context;
     }
 
+    // Hàm tổng gọi các bước theo thứ tự vì dữ liệu sau phụ thuộc dữ liệu trước.
     public async Task SeedAsync()
     {
-        await SeedRolesAsync();
-        await SeedPeopleAsync();
-        await SeedCoursesAsync();
-        await SeedClassesAsync();
-        await SeedAccountsAsync();
-        await SeedLearningDataAsync();
+        await SeedRolesAsync(); // Tạo các vai trò, trong đó Student = Học viên.
+        await SeedPeopleAsync(); // Tạo giáo viên và học viên mẫu.
+        await SeedCoursesAsync(); // Tạo khóa học mẫu.
+        await SeedClassesAsync(); // Tạo lớp học thuộc các khóa học.
+        await SeedAccountsAsync(); // Tạo tài khoản và liên kết tới học viên/giáo viên.
+        await SeedLearningDataAsync(); // Tạo đăng ký, học phí, điểm và điểm danh mẫu.
     }
 
+    // Tạo bốn loại quyền dùng để phân biệt chức năng của từng nhóm người dùng.
     private async Task SeedRolesAsync()
     {
         var roleData = new[]
@@ -33,49 +36,53 @@ public class DatabaseSeeder
             ("Student", "Học viên")
         };
 
+        // foreach lần lượt xử lý từng cặp tên hệ thống và tên hiển thị.
         foreach (var (name, displayName) in roleData)
         {
-            var role = await _context.Roles.FirstOrDefaultAsync(x => x.Name == name);
+            var role = await _context.Roles.FirstOrDefaultAsync(x => x.Name == name); // Tìm vai trò đã có.
             if (role is null)
             {
-                _context.Roles.Add(new Role { Name = name, DisplayName = displayName });
+                _context.Roles.Add(new Role { Name = name, DisplayName = displayName }); // Chưa có thì thêm mới.
             }
             else
             {
-                role.DisplayName = displayName;
+                role.DisplayName = displayName; // Đã có thì cập nhật tên hiển thị.
             }
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(); // Lưu các thay đổi vai trò xuống database.
     }
 
+    // People = con người; hàm này tạo hồ sơ giáo viên và học viên mẫu.
     private async Task SeedPeopleAsync()
     {
         var teachers = new[]
         {
-            ("TC01", "Nguyễn Minh Anh", "IELTS"),
-            ("TC02", "Trần Hoàng Nam", "Giao tiếp"),
-            ("TC03", "Lê Thùy Dương", "TOEIC"),
-            ("TC04", "Phạm Quốc Bảo", "Ngữ pháp"),
-            ("TC05", "Võ Thanh Hằng", "Tiếng Anh thiếu nhi"),
-            ("TC06", "Đỗ Hải Đăng", "Phát âm"),
-            ("TC07", "Bùi Ngọc Mai", "IELTS Writing"),
-            ("TC08", "Hoàng Tuấn Kiệt", "Business English"),
-            ("TC09", "Đặng Khánh Linh", "TOEIC"),
-            ("TC10", "Ngô Đức Anh", "Tiếng Anh học thuật"),
-            ("TC11", "Mai Phương Thảo", "Ngữ pháp ứng dụng"),
-            ("TC12", "Vũ Minh Khang", "Giao tiếp thực hành")
+            ("TC01", "Nguyễn Minh Anh", "IELTS", "Thạc sĩ Ngôn ngữ Anh", "IELTS 8.5, chứng chỉ sư phạm TESOL"),
+            ("TC02", "Trần Hoàng Nam", "Giao tiếp", "Cử nhân Sư phạm tiếng Anh", "TESOL, 7 năm đào tạo giao tiếp"),
+            ("TC03", "Lê Thùy Dương", "TOEIC", "Cử nhân Ngôn ngữ Anh", "TOEIC 990, chứng chỉ nghiệp vụ sư phạm"),
+            ("TC04", "Phạm Quốc Bảo", "Ngữ pháp", "Thạc sĩ Giáo dục", "TKT Module 1-3, chứng chỉ sư phạm"),
+            ("TC05", "Võ Thanh Hằng", "Tiếng Anh thiếu nhi", "Cử nhân Giáo dục tiểu học", "TESOL for Young Learners"),
+            ("TC06", "Đỗ Hải Đăng", "Phát âm", "Cử nhân Ngôn ngữ Anh", "Pronunciation Coach Certificate"),
+            ("TC07", "Bùi Ngọc Mai", "IELTS Writing", "Thạc sĩ Applied Linguistics", "IELTS 8.0 Writing 7.5, TESOL"),
+            ("TC08", "Hoàng Tuấn Kiệt", "Business English", "MBA, Cử nhân tiếng Anh thương mại", "BEC Higher, Business English Trainer"),
+            ("TC09", "Đặng Khánh Linh", "TOEIC", "Cử nhân Sư phạm tiếng Anh", "TOEIC 970, chứng chỉ sư phạm"),
+            ("TC10", "Ngô Đức Anh", "Tiếng Anh học thuật", "Thạc sĩ TESOL", "IELTS 8.0, Academic Writing Certificate"),
+            ("TC11", "Mai Phương Thảo", "Ngữ pháp ứng dụng", "Cử nhân Ngôn ngữ Anh", "TKT, chứng chỉ nghiệp vụ sư phạm"),
+            ("TC12", "Vũ Minh Khang", "Giao tiếp thực hành", "Cử nhân Sư phạm tiếng Anh", "TESOL, IELTS Speaking 8.0")
         };
 
         for (var index = 0; index < teachers.Length; index++)
         {
-            var (code, fullName, specialty) = teachers[index];
+            var (code, fullName, specialty, degree, certifications) = teachers[index];
             var teacher = await _context.Teachers.FirstOrDefaultAsync(x => x.Code == code);
             teacher ??= new Teacher { Code = code };
             teacher.FullName = fullName;
             teacher.Email = $"gv{index + 1:00}@englishcenter.vn";
             teacher.Phone = $"0901{index + 1:000000}";
             teacher.Specialty = specialty;
+            teacher.Degree = degree;
+            teacher.Certifications = certifications;
 
             if (teacher.Id == 0)
             {
@@ -96,24 +103,26 @@ public class DatabaseSeeder
             "Trần Gia Khang", "Lê Ngọc Diệp", "Phạm Đức Toàn", "Đặng Minh Thư"
         };
 
+        // Duyệt danh sách tên và sinh mã ST01, ST02... cho từng học viên.
         for (var index = 0; index < studentNames.Length; index++)
         {
-            var code = $"ST{index + 1:00}";
-            var student = await _context.Students.FirstOrDefaultAsync(x => x.Code == code);
-            student ??= new Student { Code = code };
+            var code = $"ST{index + 1:00}"; // :00 luôn hiển thị ít nhất hai chữ số.
+            var student = await _context.Students.FirstOrDefaultAsync(x => x.Code == code); // Tìm dữ liệu cũ.
+            student ??= new Student { Code = code }; // Nếu chưa có thì tạo đối tượng mới.
             student.FullName = studentNames[index];
             student.Email = $"st{index + 1:00}@englishcenter.vn";
             student.Phone = $"0912{index + 1:000000}";
             student.DateOfBirth = new DateTime(2002 + index % 5, index % 12 + 1, index % 24 + 1);
             student.Address = index % 2 == 0 ? "Thành phố Hồ Chí Minh" : "Bình Dương";
 
+            // Id bằng 0 nghĩa là đối tượng chưa từng được lưu vào database.
             if (student.Id == 0)
             {
                 _context.Students.Add(student);
             }
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(); // Lưu giáo viên và học viên mẫu.
     }
 
     private async Task SeedCoursesAsync()
@@ -162,8 +171,16 @@ public class DatabaseSeeder
 
     private async Task SeedClassesAsync()
     {
-        var courses = await _context.Courses.OrderBy(x => x.Code).Take(18).ToListAsync();
-        var teachers = await _context.Teachers.OrderBy(x => x.Code).Take(12).ToListAsync();
+        var courseCodes = BuildCodes("CR", 18);
+        var teacherCodes = BuildCodes("TC", 12);
+        var courses = await _context.Courses
+            .Where(x => courseCodes.Contains(x.Code))
+            .OrderBy(x => x.Code)
+            .ToListAsync();
+        var teachers = await _context.Teachers
+            .Where(x => teacherCodes.Contains(x.Code))
+            .OrderBy(x => x.Code)
+            .ToListAsync();
         if (courses.Count < 18 || teachers.Count < 12)
         {
             return;
@@ -189,6 +206,8 @@ public class DatabaseSeeder
                     _ => "Thứ 7-CN, 08:30-10:00"
                 };
                 courseClass.StartDate = DateTime.Today.AddDays(7 + index * 2);
+                courseClass.EndDate = courseClass.StartDate.AddDays((10 + courseIndex % 5) * 7);
+                courseClass.Status = CourseClassStatus.Open;
                 courseClass.Capacity = 18 + index % 8;
 
                 if (courseClass.Id == 0)
@@ -221,7 +240,11 @@ public class DatabaseSeeder
             "0909000002",
             roles["Staff"].Id);
 
-        var teachers = await _context.Teachers.OrderBy(x => x.Code).Take(12).ToListAsync();
+        var teacherCodes = BuildCodes("TC", 12);
+        var teachers = await _context.Teachers
+            .Where(x => teacherCodes.Contains(x.Code))
+            .OrderBy(x => x.Code)
+            .ToListAsync();
         for (var index = 0; index < teachers.Count; index++)
         {
             var teacher = teachers[index];
@@ -234,7 +257,11 @@ public class DatabaseSeeder
                 teacherId: teacher.Id);
         }
 
-        var students = await _context.Students.OrderBy(x => x.Code).Take(36).ToListAsync();
+        var studentCodes = BuildCodes("ST", 36);
+        var students = await _context.Students
+            .Where(x => studentCodes.Contains(x.Code))
+            .OrderBy(x => x.Code)
+            .ToListAsync();
         for (var index = 0; index < students.Count; index++)
         {
             var student = students[index];
@@ -285,10 +312,17 @@ public class DatabaseSeeder
 
     private async Task SeedLearningDataAsync()
     {
-        var students = await _context.Students.OrderBy(x => x.Code).Take(36).ToListAsync();
+        var studentCodes = BuildCodes("ST", 36);
+        var classCodes = BuildCodes("CL", 27);
+        var students = await _context.Students
+            .Where(x => studentCodes.Contains(x.Code))
+            .OrderBy(x => x.Code)
+            .ToListAsync();
         var classes = await _context.CourseClasses
             .Include(x => x.Course).Include(x => x.Teacher)
-            .OrderBy(x => x.Code).Take(27).ToListAsync();
+            .Where(x => classCodes.Contains(x.Code))
+            .OrderBy(x => x.Code)
+            .ToListAsync();
         if (students.Count < 36 || classes.Count < 27)
         {
             return;
@@ -353,6 +387,27 @@ public class DatabaseSeeder
                 {
                     _context.Payments.Add(payment);
                 }
+
+                await _context.SaveChangesAsync();
+
+                if (paidAmount > 0
+                    && !await _context.PaymentTransactions.AnyAsync(x =>
+                        x.PaymentId == payment.Id && x.Status == PaymentTransactionState.Approved))
+                {
+                    _context.PaymentTransactions.Add(new PaymentTransaction
+                    {
+                        PaymentId = payment.Id,
+                        StudentId = student.Id,
+                        Amount = paidAmount,
+                        PaymentMethod = payment.PaymentMethod,
+                        PaidAt = payment.PaidDate?.Date.AddHours(9) ?? DateTime.Now,
+                        Status = PaymentTransactionState.Approved,
+                        ApprovedAt = payment.PaidDate?.Date.AddHours(10) ?? DateTime.Now,
+                        ApprovedBy = "Dữ liệu mẫu",
+                        RecordedBy = "Dữ liệu mẫu",
+                        Note = "Thanh toán mẫu đã duyệt"
+                    });
+                }
             }
 
             if (enrollment.Status == EnrollmentState.Approved
@@ -413,5 +468,12 @@ public class DatabaseSeeder
         }
 
         await _context.SaveChangesAsync();
+    }
+
+    private static string[] BuildCodes(string prefix, int count)
+    {
+        return Enumerable.Range(1, count)
+            .Select(x => $"{prefix}{x:00}")
+            .ToArray();
     }
 }

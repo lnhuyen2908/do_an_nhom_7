@@ -38,6 +38,16 @@
                 <span asp-validation-for="Specialty" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Degree" class="control-label"></label>
+                <input asp-for="Degree" class="form-control" />
+                <span asp-validation-for="Degree" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Certifications" class="control-label"></label>
+                <textarea asp-for="Certifications" class="form-control"></textarea>
+                <span asp-validation-for="Certifications" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Lưu" class="btn btn-primary" />
             </div>
         </form>

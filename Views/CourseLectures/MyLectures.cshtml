@@ -10,7 +10,8 @@
     <form asp-action="AddLecture" method="post" enctype="multipart/form-data" class="form-grid">
         <div class="form-field"><label>Khóa học</label><select class="form-select" name="courseId" required>@foreach(var course in courses){<option value="@course.Id">@course.Code · @course.Name</option>}</select></div>
         <div class="form-field"><label>Tiêu đề</label><input class="form-control" name="title" maxlength="200" required /></div>
-        <div class="form-field"><label>Tệp bài giảng</label><input class="form-control" type="file" name="lectureFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" required /></div>
+        <div class="form-field"><label>Tệp bài giảng</label><input class="form-control" type="file" name="lectureFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" /></div>
+        <div class="form-field full"><label>Link YouTube</label><input class="form-control" type="url" name="youTubeUrl" placeholder="https://www.youtube.com/watch?v=..." /></div>
         <div class="full"><button class="btn btn-primary">Thêm bài giảng</button></div>
     </form>
 </section>
@@ -19,7 +20,7 @@
     <div class="resource-grid">
     @foreach(var item in Model)
     {
-        <article class="resource-card"><span class="badge text-bg-light">@item.Course.Code</span><h3>@item.Title</h3><p>@item.FileName</p><small>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm")</small><div class="action-strip mt-3"><a class="btn btn-outline-primary" href="@item.FileUrl" target="_blank" rel="noopener">Mở tài liệu</a><form asp-action="RemoveLecture" method="post"><input type="hidden" name="id" value="@item.Id" /><button class="btn btn-outline-danger">Xóa</button></form></div></article>
+        <article class="resource-card"><span class="badge text-bg-light">@item.Course.Code</span><h3>@item.Title</h3><p>@item.FileName</p><small>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm")</small><div class="action-strip mt-3">@if(!string.IsNullOrWhiteSpace(item.FileUrl)){<a class="btn btn-outline-primary" href="@item.FileUrl" target="_blank" rel="noopener">Mở tài liệu</a>}@if(!string.IsNullOrWhiteSpace(item.YouTubeUrl)){<a class="btn btn-outline-primary" href="@item.YouTubeUrl" target="_blank" rel="noopener">YouTube</a>}<form asp-action="RemoveLecture" method="post"><input type="hidden" name="id" value="@item.Id" /><button class="btn btn-outline-danger">Xóa</button></form></div></article>
     }
     </div>
 </section>

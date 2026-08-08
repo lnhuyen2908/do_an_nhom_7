@@ -5,10 +5,15 @@
     var courseClass = (CourseClass)ViewBag.CourseClass;
     var studyDate = (DateTime)ViewBag.StudyDate;
     var attendance = ViewBag.Attendance as IEnumerable<AttendanceRecord> ?? [];
+    var dateValidationMessage = ViewBag.DateValidationMessage as string;
 }
 <section class="page-heading"><div><p class="section-kicker">@courseClass.Code</p><h1>Điểm danh · @courseClass.Course.Name</h1><p>Ghi nhận tình trạng tham gia học theo từng ngày.</p></div><a class="btn btn-outline-secondary" asp-controller="CourseClasses" asp-action="MyClasses">Quay lại lớp dạy</a></section>
 <section class="content-card">
     <form asp-action="Manage" method="get" class="filter-bar"><input type="hidden" name="classId" value="@courseClass.Id" /><label>Ngày học<input class="form-control" type="date" name="studyDate" value="@studyDate.ToString("yyyy-MM-dd")" /></label><button class="btn btn-outline-primary">Xem ngày</button></form>
+    @if (!string.IsNullOrWhiteSpace(dateValidationMessage))
+    {
+        <div class="alert alert-danger">@dateValidationMessage</div>
+    }
     <form asp-action="SaveAll" method="post">
         <input type="hidden" name="classId" value="@courseClass.Id" />
         <input type="hidden" name="studyDate" value="@studyDate.ToString("yyyy-MM-dd")" />
@@ -38,7 +43,7 @@
         }
         </tbody></table></div>
         <div class="attendance-bulk-actions">
-            <button class="btn btn-primary" type="submit">Lưu tất cả</button>
+            <button class="btn btn-primary" type="submit" disabled="@(!string.IsNullOrWhiteSpace(dateValidationMessage))">Lưu tất cả</button>
         </div>
     </form>
 </section>

@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Danh sách";
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalItems = ViewBag.TotalItems is int total ? total : Model.Count();
 }
 
 <h1>Danh sách</h1>
@@ -9,6 +12,11 @@
 <p>
     <a class="btn btn-primary" asp-action="Create">Thêm mới</a>
 </p>
+<form method="get" class="content-card filter-bar">
+    <label>Tìm lớp/khóa/giáo viên<input class="form-control" name="keyword" value="@ViewBag.Keyword" /></label>
+    <label>Ngày khai giảng<input class="form-control" type="date" name="startDate" value="@ViewBag.StartDate" /></label>
+    <button class="btn btn-primary">Tìm kiếm</button>
+</form>
 <table class="table">
     <thead>
         <tr>
@@ -25,6 +33,9 @@
                 @Html.DisplayNameFor(model => model.StartDate)
             </th>
             <th>
+                Trạng thái
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Capacity)
             </th>
             <th>
@@ -37,7 +48,13 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@if (!Model.Any())
+{
+        <tr><td colspan="9" class="empty-table-message">Không tìm thấy lớp học phù hợp.</td></tr>
+}
+else
+{
+foreach (var item in Model) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Code)
@@ -49,7 +66,14 @@
                 @Html.DisplayFor(modelItem => item.Schedule)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
+                @item.StartDate.ToString("dd/MM/yyyy")
+                @if (item.EndDate.HasValue)
+                {
+                    <small class="d-block text-muted">Đến @item.EndDate.Value.ToString("dd/MM/yyyy")</small>
+                }
+            </td>
+            <td>
+                <span class="status-pill status-class status-class-@(item.EffectiveStatus.ToString().ToLowerInvariant())">@DisplayStatus(item.EffectiveStatus)</span>
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Capacity)
@@ -67,5 +91,37 @@
             </td>
         </tr>
 }
+}
     </tbody>
 </table>
+@if (totalPages > 1)
+{
+    <nav class="pager-bar" aria-label="Phân trang lớp học">
+        <span>Trang @currentPage/@totalPages · @totalItems lớp</span>
+        <div>
+            <a class="pager-number @(currentPage == 1 ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-startDate="@ViewBag.StartDate" asp-route-page="@(currentPage - 1)">&lt;</a>
+            @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
+            {
+                if (number == PaginationHelper.Ellipsis)
+                {
+                    <span class="pager-number disabled">...</span>
+                }
+                else
+                {
+                    <a class="pager-number @(number == currentPage ? "active" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-startDate="@ViewBag.StartDate" asp-route-page="@number">@number</a>
+                }
+            }
+            <a class="pager-number @(currentPage == totalPages ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-startDate="@ViewBag.StartDate" asp-route-page="@(currentPage + 1)">&gt;</a>
+        </div>
+    </nav>
+}
+
+@functions {
+    private static string DisplayStatus(CourseClassStatus status) => status switch
+    {
+        CourseClassStatus.Upcoming => "Sắp khai giảng",
+        CourseClassStatus.Open => "Đang mở",
+        CourseClassStatus.Locked => "Đã khóa lớp",
+        _ => "Đã đóng"
+    };
+}

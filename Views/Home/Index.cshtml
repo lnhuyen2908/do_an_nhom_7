@@ -10,6 +10,11 @@
         "Student" => "Học viên",
         _ => string.Empty
     };
+    var totalStudents = ViewBag.StudentCount is int studentCount ? studentCount : 0;
+    var totalTeachers = ViewBag.TeacherCount is int teacherCount ? teacherCount : 0;
+    var totalCourses = ViewBag.CourseCount is int courseCount ? courseCount : 0;
+    var totalClasses = ViewBag.ClassCount is int classCount ? classCount : 0;
+    var unreadNotifications = ViewBag.UnreadNotificationCount is int notificationCount ? notificationCount : 0;
 }
 
 <section class="hero-panel hero-home">
@@ -39,11 +44,42 @@
         <strong>Chọn đúng khóa học ngay từ đầu</strong>
         <p>Giao tiếp, IELTS, TOEIC, thiếu nhi và lớp nền tảng theo mục tiêu học tập.</p>
         <div class="hero-mini-stats">
-            <span><strong>@Model.Count()</strong> khóa học</span>
-            <span><strong>2</strong> hình thức học</span>
+            <span><strong>@totalCourses</strong> khóa học</span>
+            <span><strong>@totalClasses</strong> lớp học</span>
         </div>
         <a class="btn btn-sm btn-primary" asp-controller="Auth" asp-action="Register">Đăng ký tư vấn</a>
     </aside>
+</section>
+
+<section class="stats-grid home-count-grid" aria-label="Quy mô trung tâm">
+    <article class="stat-card">
+        <span>Học viên</span>
+        <strong>@totalStudents</strong>
+        <small>Đang theo học tại trung tâm</small>
+    </article>
+    <article class="stat-card">
+        <span>Giáo viên</span>
+        <strong>@totalTeachers</strong>
+        <small>Đội ngũ giảng dạy</small>
+    </article>
+    <article class="stat-card">
+        <span>Khóa học</span>
+        <strong>@totalCourses</strong>
+        <small>Chương trình đang cung cấp</small>
+    </article>
+    <article class="stat-card">
+        <span>Lớp học</span>
+        <strong>@totalClasses</strong>
+        <small>Lịch khai giảng và các lớp hiện có</small>
+    </article>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <article class="stat-card notification-stat-card">
+            <span>Thông báo mới</span>
+            <strong>@unreadNotifications</strong>
+            <small><a asp-controller="Notifications" asp-action="Index">Xem thông báo</a></small>
+        </article>
+    }
 </section>
 
 <div class="section-title home-section-title">

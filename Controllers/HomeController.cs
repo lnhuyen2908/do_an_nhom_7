@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,16 @@ public class HomeController : Controller
         ViewBag.CourseCount = await _context.Courses.CountAsync();
         ViewBag.ClassCount = await _context.CourseClasses.CountAsync();
 
-        var featuredCourses = await _context.Courses .AsNoTracking()    .OrderBy(x => x.Code).Take(3).ToListAsync();
+        var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        ViewBag.UnreadNotificationCount = int.TryParse(accountIdClaim, out var accountId)
+            ? await _context.Notifications.AsNoTracking()
+                .CountAsync(x => x.UserAccountId == accountId && !x.IsRead)
+            : 0;
+
+        var featuredCourses = await _context.Courses.AsNoTracking()
+            .OrderBy(x => x.Code)
+            .Take(3)
+            .ToListAsync();
 
         return View(featuredCourses);
     }

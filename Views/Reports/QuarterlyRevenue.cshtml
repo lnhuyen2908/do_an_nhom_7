@@ -1,0 +1,37 @@
+@model IEnumerable<web_do_an1.Controllers.ReportsController.MonthlyRevenueRow>
+@{
+    ViewData["Title"] = "Doanh thu theo quý";
+    var year = ViewBag.Year is int selectedYear ? selectedYear : DateTime.Today.Year;
+    var quarter = ViewBag.Quarter is int selectedQuarter ? selectedQuarter : 1;
+    var total = ViewBag.TotalRevenue is decimal revenue ? revenue : 0;
+    var max = Math.Max(1, Model.Select(x => x.Revenue).DefaultIfEmpty().Max());
+}
+
+<section class="page-heading">
+    <div>
+        <p class="section-kicker">Báo cáo</p>
+        <h1>Doanh thu theo quý</h1>
+        <p>Doanh thu chỉ tính các giao dịch đã được Admin/NVDT duyệt thành công.</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-action="QuarterlyRevenuePdf" asp-route-year="@year" asp-route-quarter="@quarter">Xuất PDF</a>
+</section>
+
+<section class="content-card">
+    <form method="get" class="filter-bar">
+        <label>Năm<input class="form-control" type="number" name="year" value="@year" min="2020" max="2100" /></label>
+        <label>Quý<select class="form-select" name="quarter">@for (var q = 1; q <= 4; q++){<option value="@q" selected="@(quarter == q)">Quý @q</option>}</select></label>
+        <button class="btn btn-primary">Xem thống kê</button>
+    </form>
+    <article class="stat-card"><span>Tổng doanh thu quý @quarter/@year</span><strong>@total.ToString("N0") đ</strong></article>
+    <div class="revenue-chart" aria-label="Biểu đồ doanh thu theo tháng">
+        @foreach (var row in Model)
+        {
+            var height = Math.Max(4, (double)(row.Revenue / max) * 100);
+            <div class="revenue-bar">
+                <span style="height:@height.ToString("0")%"></span>
+                <strong>Tháng @row.Month</strong>
+                <small>@row.Revenue.ToString("N0") đ</small>
+            </div>
+        }
+    </div>
+</section>

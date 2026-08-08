@@ -19,10 +19,12 @@ public class CourseClassesController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Schedule(string? keyword, string? mode)
+    public async Task<IActionResult> Schedule(string? keyword, string? mode, DateTime? startDate, int page = 1)
     {
+        const int pageSize = 10;
         keyword = keyword?.Trim();
         mode = mode?.Trim();
+        page = Math.Max(page, 1);
         var query = _context.CourseClasses.AsNoTracking()
             .Include(x => x.Course).Include(x => x.Teacher)
             .AsQueryable();
@@ -40,6 +42,11 @@ public class CourseClassesController : Controller
         {
             query = query.Where(x => !x.Room.Contains("Online"));
         }
+        if (startDate.HasValue)
+        {
+            var selectedDate = startDate.Value.Date;
+            query = query.Where(x => x.StartDate.Date == selectedDate);
+        }
 
         if (User.IsInRole("Teacher"))
         {
@@ -55,16 +62,57 @@ public class CourseClassesController : Controller
 
         ViewBag.Keyword = keyword;
         ViewBag.Mode = mode;
-        return View(await query.OrderBy(x => x.StartDate).ThenBy(x => x.Code).ToListAsync());
+        ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
+
+        var totalItems = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        page = Math.Min(page, totalPages);
+        ViewBag.Page = page;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.TotalItems = totalItems;
+
+        return View(await query.OrderByDescending(x => x.StartDate).ThenBy(x => x.Code)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync());
     }
 
     [Authorize(Roles = "Admin,Staff")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? keyword, DateTime? startDate, int page = 1)
     {
-        return View(await _context.CourseClasses.AsNoTracking()
+        const int pageSize = 10;
+        keyword = keyword?.Trim();
+        page = Math.Max(page, 1);
+        var query = _context.CourseClasses.AsNoTracking()
             .Include(x => x.Course).Include(x => x.Teacher)
             .Include(x => x.Enrollments)
-            .OrderBy(x => x.StartDate).ToListAsync());
+            .AsQueryable();
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(x => x.Code.Contains(keyword)
+                || x.Course.Code.Contains(keyword)
+                || x.Course.Name.Contains(keyword)
+                || x.Teacher.FullName.Contains(keyword));
+        }
+        if (startDate.HasValue)
+        {
+            var selectedDate = startDate.Value.Date;
+            query = query.Where(x => x.StartDate.Date == selectedDate);
+        }
+
+        var totalItems = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        page = Math.Min(page, totalPages);
+        ViewBag.Keyword = keyword;
+        ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
+        ViewBag.Page = page;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.TotalItems = totalItems;
+
+        return View(await query.OrderByDescending(x => x.StartDate).ThenBy(x => x.Code)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync());
     }
 
     [Authorize(Roles = "Admin,Staff")]
@@ -90,7 +138,7 @@ public class CourseClassesController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
-        [Bind("Id,Code,CourseId,TeacherId,Room,Schedule,StartDate,Capacity")]
+        [Bind("Id,Code,CourseId,TeacherId,Room,Schedule,StartDate,EndDate,Status,Capacity")]
         CourseClass courseClass)
     {
         courseClass.Code = courseClass.Code.Trim().ToUpperInvariant();
@@ -129,7 +177,7 @@ public class CourseClassesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(
         int id,
-        [Bind("Id,Code,CourseId,TeacherId,Room,Schedule,StartDate,Capacity")]
+        [Bind("Id,Code,CourseId,TeacherId,Room,Schedule,StartDate,EndDate,Status,Capacity")]
         CourseClass courseClass)
     {
         if (id != courseClass.Id)
@@ -265,10 +313,60 @@ public class CourseClassesController : Controller
         {
             ModelState.AddModelError(nameof(CourseClass.TeacherId), "Vui lòng chọn giáo viên hợp lệ.");
         }
+
+        if (courseClass.EndDate.HasValue && courseClass.EndDate.Value.Date < courseClass.StartDate.Date)
+        {
+            ModelState.AddModelError(nameof(CourseClass.EndDate), "Ngày kết thúc phải sau ngày bắt đầu.");
+        }
+
+        if (ParseStudyDays(courseClass.Schedule).Count == 0)
+        {
+            ModelState.AddModelError(
+                nameof(CourseClass.Schedule),
+                "Lịch học cần ghi rõ thứ học, ví dụ: Thứ 2-4-6, 18:00-19:30.");
+        }
     }
 
     private int? ClaimId(string type)
     {
         return int.TryParse(User.FindFirstValue(type), out var id) ? id : null;
+    }
+
+    private static HashSet<DayOfWeek> ParseStudyDays(string schedule)
+    {
+        var days = new HashSet<DayOfWeek>();
+        var firstPart = schedule.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault() ?? schedule;
+        firstPart = firstPart.Replace("Thứ", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("thu", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Trim();
+
+        foreach (var token in firstPart.Split('-', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            var normalized = token.Trim().ToUpperInvariant();
+            if (normalized is "CN" or "CHỦ NHẬT" or "CHU NHAT")
+            {
+                days.Add(DayOfWeek.Sunday);
+            }
+            else if (int.TryParse(normalized, out var dayNumber))
+            {
+                var day = dayNumber switch
+                {
+                    2 => DayOfWeek.Monday,
+                    3 => DayOfWeek.Tuesday,
+                    4 => DayOfWeek.Wednesday,
+                    5 => DayOfWeek.Thursday,
+                    6 => DayOfWeek.Friday,
+                    7 => DayOfWeek.Saturday,
+                    _ => (DayOfWeek?)null
+                };
+                if (day.HasValue)
+                {
+                    days.Add(day.Value);
+                }
+            }
+        }
+
+        return days;
     }
 }

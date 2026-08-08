@@ -7,7 +7,13 @@ public enum PaymentState
     [Display(Name = "Chưa thanh toán")]
     Unpaid,
 
-    [Display(Name = "Đã thanh toán")]
+    [Display(Name = "Chờ duyệt")]
+    PendingApproval,
+
+    [Display(Name = "Đã thanh toán một phần")]
+    PartiallyPaid,
+
+    [Display(Name = "Thành công")]
     Paid,
 
     [Display(Name = "Đã hủy")]

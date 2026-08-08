@@ -2,52 +2,91 @@
 
 @{
     ViewData["Title"] = "Danh sách";
+    var classes = ViewBag.Classes as IEnumerable<CourseClass> ?? [];
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalItems = ViewBag.TotalItems is int total ? total : Model.Count();
 }
 
 <section class="page-heading"><div><p class="section-kicker">Đào tạo</p><h1>Kết quả học tập</h1><p>Tổng hợp điểm và nhận xét của học viên theo lớp.</p></div></section>
 <section class="content-card">
+<form method="get" class="filter-bar">
+    <label>Tìm học viên/lớp<input class="form-control" name="keyword" value="@ViewBag.Keyword" /></label>
+    <label>Lớp<select class="form-select" name="classId"><option value="">Tất cả</option>@foreach (var item in classes){<option value="@item.Id" selected="@(ViewBag.ClassId == item.Id)">@item.Code · @item.Course.Name</option>}</select></label>
+    <button class="btn btn-primary">Tìm kiếm</button>
+</form>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.MidtermScore)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FinalScore)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Comment)
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Student)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.CourseClass)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MidtermScore)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FinalScore)
+            </th>
             <th>Trung bình</th><th>Kết quả</th>
+            <th>
+                @Html.DisplayNameFor(model => model.Comment)
+            </th>
+            <th>PDF</th>
         </tr>
     </thead>
     <tbody>
+@if (!Model.Any())
+{
+        <tr><td colspan="8" class="empty-table-message">Không tìm thấy kết quả học tập phù hợp.</td></tr>
+}
+else
+{
 @foreach (var item in Model) {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.MidtermScore)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FinalScore)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Comment)
-            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Student.FullName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.CourseClass.Code)
             </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MidtermScore)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FinalScore)
+            </td>
             <td>@item.AverageScore.ToString("0.0")</td><td>@item.Result</td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Comment)
+            </td>
+            <td><a class="btn btn-sm btn-outline-primary" asp-controller="Reports" asp-action="StudentResultPdf" asp-route-studentId="@item.StudentId" asp-route-classId="@item.CourseClassId">Xuất PDF</a></td>
         </tr>
+}
 }
     </tbody>
 </table>
+@if (totalPages > 1)
+{
+    <nav class="pager-bar" aria-label="Phân trang kết quả học tập">
+        <span>Trang @currentPage/@totalPages · @totalItems kết quả</span>
+        <div>
+            <a class="pager-number @(currentPage == 1 ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-classId="@ViewBag.ClassId" asp-route-page="@(currentPage - 1)">&lt;</a>
+            @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
+            {
+                if (number == PaginationHelper.Ellipsis)
+                {
+                    <span class="pager-number disabled">...</span>
+                }
+                else
+                {
+                    <a class="pager-number @(number == currentPage ? "active" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-classId="@ViewBag.ClassId" asp-route-page="@number">@number</a>
+                }
+            }
+            <a class="pager-number @(currentPage == totalPages ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-classId="@ViewBag.ClassId" asp-route-page="@(currentPage + 1)">&gt;</a>
+        </div>
+    </nav>
+}
 </section>

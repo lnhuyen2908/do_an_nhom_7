@@ -2,9 +2,17 @@
 @using web_do_an1.Models
 @{
     ViewData["Title"] = "Quản lý học phí";
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalItems = ViewBag.TotalItems is int total ? total : Model.Count();
 }
 <section class="page-heading"><div><p class="section-kicker">Tài chính</p><h1>Quản lý học phí</h1><p>Ghi nhận thanh toán và theo dõi công nợ của từng học viên.</p></div></section>
 <section class="content-card">
+    <form method="get" class="filter-bar">
+        <label>Tìm học phí<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Học viên, khóa học" /></label>
+        <label>Trạng thái<select class="form-select" name="status"><option value="">Tất cả</option>@foreach (var state in Enum.GetValues<PaymentState>()){<option value="@state" selected="@(ViewBag.Status == state)">@state</option>}</select></label>
+        <button class="btn btn-primary">Tìm kiếm</button>
+    </form>
     <div class="table-responsive">
         <table class="table align-middle">
             <thead>
@@ -20,11 +28,29 @@
 
             </thead>
             <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6" class="empty-table-message">Không tìm thấy khoản học phí phù hợp.</td></tr>
+            }
+            else
+            {
             @foreach (var item in Model)
             {
-                var isPaid = item.PaidAmount >= item.Amount || item.Status == PaymentState.Paid;
-                var statusText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
-                var statusCss = isPaid ? "paid" : "unpaid";
+                var statusText = item.Status switch
+                {
+                    PaymentState.PendingApproval => "Chờ duyệt",
+                    PaymentState.PartiallyPaid => "Đã đóng một phần",
+                    PaymentState.Paid => "Thành công",
+                    PaymentState.Cancelled => "Đã hủy",
+                    _ => "Chưa thanh toán"
+                };
+                var statusCss = item.Status switch
+                {
+                    PaymentState.PendingApproval => "pending",
+                    PaymentState.PartiallyPaid => "partial",
+                    PaymentState.Paid => "paid",
+                    _ => "unpaid"
+                };
                 <tr>
                     <td><strong>@item.Student.FullName</strong><small class="d-block text-muted">@item.Student.Code</small></td>
                     <td>@item.Enrollment.Course.Name<small class="d-block text-muted">@(item.Enrollment.CourseClass?.Code ?? "Chưa xếp lớp")</small></td>
@@ -42,10 +68,52 @@
                             </select>
                             <button class="btn btn-sm btn-primary">Lưu</button>
                         </form>
+                        @foreach (var transaction in item.PaymentTransactions
+                            .Where(x => x.Status == PaymentTransactionState.Pending)
+                            .OrderBy(x => x.PaidAt))
+                        {
+                            <div class="pending-payment-row">
+                                <span>@transaction.PaidAt.ToString("dd/MM/yyyy HH:mm") · @transaction.Amount.ToString("N0") đ</span>
+                                <form asp-action="ApproveTransaction" method="post">
+                                    <input type="hidden" name="transactionId" value="@transaction.Id" />
+                                    <button class="btn btn-sm btn-success">Duyệt</button>
+                                </form>
+                                <form asp-action="RejectTransaction" method="post">
+                                    <input type="hidden" name="transactionId" value="@transaction.Id" />
+                                    <button class="btn btn-sm btn-outline-danger">Từ chối</button>
+                                </form>
+                            </div>
+                        }
+                        @if (item.Status == PaymentState.Paid)
+                        {
+                            <a class="btn btn-sm btn-outline-primary mt-2" asp-controller="Reports" asp-action="InvoicePdf" asp-route-paymentId="@item.Id">Xuất hóa đơn</a>
+                        }
                     </td>
                 </tr>
+            }
             }
             </tbody>
         </table>
     </div>
+    @if (totalPages > 1)
+    {
+        <nav class="pager-bar">
+            <span>Trang @currentPage/@totalPages · @totalItems khoản học phí</span>
+            <div>
+                <a class="pager-number @(currentPage == 1 ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-status="@ViewBag.Status" asp-route-page="@(currentPage - 1)">&lt;</a>
+                @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
+                {
+                    if (number == PaginationHelper.Ellipsis)
+                    {
+                        <span class="pager-number disabled">...</span>
+                    }
+                    else
+                    {
+                        <a class="pager-number @(number == currentPage ? "active" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-status="@ViewBag.Status" asp-route-page="@number">@number</a>
+                    }
+                }
+                <a class="pager-number @(currentPage == totalPages ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-status="@ViewBag.Status" asp-route-page="@(currentPage + 1)">&gt;</a>
+            </div>
+        </nav>
+    }
 </section>

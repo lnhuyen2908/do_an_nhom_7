@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+@using Microsoft.EntityFrameworkCore
+@inject web_do_an1.Data.EnglishCenterDbContext DbContext
+@{
+    var roleName = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
+    var roleDisplay = roleName switch
+    {
+        "Admin" => "Quản trị viên",
+        "Staff" => "Nhân viên đào tạo",
+        _ => roleName
+    };
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    var unreadNotifications = 0;
+    if (User.Identity?.IsAuthenticated == true
+        && int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var accountId))
+    {
+        unreadNotifications = await DbContext.Notifications.AsNoTracking()
+            .CountAsync(x => x.UserAccountId == accountId && !x.IsRead);
+    }
+}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Khu vận hành</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="admin-body">
+    @if (TempData["SuccessMessage"] is string message)
+    {
+        <div class="app-toast app-toast-success" data-app-toast role="status" aria-live="polite">
+            <span>@message</span>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="app-toast app-toast-error" data-app-toast role="alert" aria-live="assertive">
+            <span>@errorMessage</span>
+        </div>
+    }
+
+    <div class="admin-shell">
+        <aside class="admin-sidebar" aria-label="Điều hướng khu vận hành">
+            <a class="admin-brand" asp-controller="Home" asp-action="Dashboard">
+                <span class="admin-brand-mark" aria-hidden="true">E</span>
+                <span>
+                    <strong>English Center</strong>
+                    <small>KHU VẬN HÀNH</small>
+                </span>
+            </a>
+
+            <div class="admin-user-card">
+                <span class="admin-avatar" aria-hidden="true">@(User.Identity?.Name?.FirstOrDefault() ?? 'E')</span>
+                <span>
+                    <strong>@User.Identity?.Name</strong>
+                    <small>@roleDisplay</small>
+                </span>
+            </div>
+
+            <nav class="admin-nav">
+                <p class="admin-nav-label">Tổng quan</p>
+                <a class="@(currentController == "Home" && currentAction == "Dashboard" ? "active" : "")"
+                   asp-controller="Home" asp-action="Dashboard">
+                    <span class="admin-nav-icon" aria-hidden="true">⌂</span> Bảng điều khiển
+                </a>
+
+                <p class="admin-nav-label">Đào tạo</p>
+                <a class="@(currentController == "Courses" ? "active" : "")" asp-controller="Courses" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">▦</span> Khóa học
+                </a>
+                <a class="@(currentController == "CourseClasses" ? "active" : "")" asp-controller="CourseClasses" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">◫</span> Lớp học & lịch khai giảng
+                </a>
+                <a class="@(currentController == "Enrollments" ? "active" : "")" asp-controller="Enrollments" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">✓</span> Duyệt đăng ký
+                </a>
+                <a class="@(currentController == "Scores" ? "active" : "")" asp-controller="Scores" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">▤</span> Kết quả học tập
+                </a>
+                <a class="@(currentController == "AttendanceRecords" ? "active" : "")" asp-controller="AttendanceRecords" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">◷</span> Điểm danh
+                </a>
+                <a class="@(currentController == "CourseLectures" ? "active" : "")" asp-controller="CourseLectures" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">◈</span> Bài giảng
+                </a>
+
+                <p class="admin-nav-label">Tài chính</p>
+                <a class="@(currentController == "Payments" ? "active" : "")" asp-controller="Payments" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">₫</span> Học phí
+                </a>
+                <a class="@(currentController == "PaymentTransactions" ? "active" : "")" asp-controller="PaymentTransactions" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">⇄</span> Giao dịch
+                </a>
+                <a class="@(currentController == "Reports" ? "active" : "")" asp-controller="Reports" asp-action="QuarterlyRevenue">
+                    <span class="admin-nav-icon" aria-hidden="true">▥</span> Báo cáo doanh thu
+                </a>
+
+                <p class="admin-nav-label">Nhân sự</p>
+                <a class="@(currentController == "Students" ? "active" : "")" asp-controller="Students" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">♙</span> Học viên
+                </a>
+                <a class="@(currentController == "Teachers" ? "active" : "")" asp-controller="Teachers" asp-action="Index">
+                    <span class="admin-nav-icon" aria-hidden="true">♙</span> Giáo viên
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="@(currentController == "UserAccounts" ? "active" : "")" asp-controller="UserAccounts" asp-action="Index">
+                        <span class="admin-nav-icon" aria-hidden="true">◎</span> Tài khoản
+                    </a>
+                    <a class="@(currentController == "Roles" ? "active" : "")" asp-controller="Roles" asp-action="Index">
+                        <span class="admin-nav-icon" aria-hidden="true">◉</span> Vai trò
+                    </a>
+                }
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <a asp-controller="Home" asp-action="Index"><span aria-hidden="true">↗</span> Xem trang công khai</a>
+                <form asp-controller="Auth" asp-action="Logout" method="post">
+                    <button type="submit"><span aria-hidden="true">⇥</span> Đăng xuất</button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <div>
+                    <span class="admin-topbar-kicker">TRUNG TÂM TIẾNG ANH</span>
+                    <strong>@ViewData["Title"]</strong>
+                </div>
+                <div class="admin-topbar-actions">
+                    <a class="notification-link admin-notification" asp-controller="Notifications" asp-action="Index" aria-label="Thông báo">
+                        <span aria-hidden="true">&#128276;</span>
+                        @if (unreadNotifications > 0)
+                        {
+                            <strong>@unreadNotifications</strong>
+                        }
+                    </a>
+                    <span class="admin-topbar-role">@roleDisplay</span>
+                </div>
+            </header>
+
+            <main role="main" class="admin-content">
+                @RenderBody()
+            </main>
+
+            <footer class="admin-footer">English Center · Khu vực quản trị nội bộ</footer>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

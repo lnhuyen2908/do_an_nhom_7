@@ -8,7 +8,9 @@
     string account = "19073006413011";
     string accountName = "TRUNG TAM ANH NGU";
 
-    decimal remaining = Model.Amount - Model.PaidAmount;
+    decimal remaining = ViewBag.Amount is decimal selectedAmount
+        ? selectedAmount
+        : Model.Amount - Model.PaidAmount;
 
     string content = $"HP_{Model.Id}";
 

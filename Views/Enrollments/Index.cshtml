@@ -4,16 +4,30 @@
     ViewData["Title"] = "Quản lý đăng ký khóa học";
     var classes = ViewBag.Classes as IEnumerable<CourseClass> ?? [];
     var seats = ViewBag.ClassSeats as IDictionary<int, int> ?? new Dictionary<int, int>();
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalItems = ViewBag.TotalItems is int total ? total : Model.Count();
 }
 
 <section class="page-heading">
     <div><p class="section-kicker">Đào tạo</p><h1>Quản lý đăng ký khóa học</h1><p>Duyệt hồ sơ và xếp học viên vào đúng lớp còn chỗ.</p></div>
 </section>
 <section class="content-card">
+    <form method="get" class="filter-bar">
+        <label>Tìm đăng ký<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Học viên, khóa học, lớp" /></label>
+        <label>Trạng thái<select class="form-select" name="status"><option value="">Tất cả</option>@foreach (var state in Enum.GetValues<EnrollmentState>()){<option value="@state" selected="@(ViewBag.Status == state)">@state</option>}</select></label>
+        <button class="btn btn-primary">Tìm kiếm</button>
+    </form>
     <div class="table-responsive">
         <table class="table align-middle">
             <thead><tr><th>Học viên</th><th>Khóa học</th><th>Đăng ký</th><th>Trạng thái</th><th>Học phí</th><th style="min-width:340px">Xử lý</th></tr></thead>
             <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="5" class="empty-table-message">Không tìm thấy đăng ký phù hợp.</td></tr>
+            }
+            else
+            {
             @foreach (var item in Model)
             {
                 var courseClasses = classes.Where(x => x.CourseId == item.CourseId);
@@ -51,7 +65,29 @@
                     </td>
                 </tr>
             }
+            }
             </tbody>
         </table>
     </div>
+    @if (totalPages > 1)
+    {
+        <nav class="pager-bar">
+            <span>Trang @currentPage/@totalPages · @totalItems đăng ký</span>
+            <div>
+                <a class="pager-number @(currentPage == 1 ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-status="@ViewBag.Status" asp-route-page="@(currentPage - 1)">&lt;</a>
+                @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
+                {
+                    if (number == PaginationHelper.Ellipsis)
+                    {
+                        <span class="pager-number disabled">...</span>
+                    }
+                    else
+                    {
+                        <a class="pager-number @(number == currentPage ? "active" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-status="@ViewBag.Status" asp-route-page="@number">@number</a>
+                    }
+                }
+                <a class="pager-number @(currentPage == totalPages ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-status="@ViewBag.Status" asp-route-page="@(currentPage + 1)">&gt;</a>
+            </div>
+        </nav>
+    }
 </section>

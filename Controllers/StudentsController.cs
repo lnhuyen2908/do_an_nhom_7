@@ -23,9 +23,31 @@ namespace web_do_an1.Controllers
         }
 
         // GET: Students
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? keyword, int page = 1)
         {
-            return View(await _context.Students.ToListAsync());
+            const int pageSize = 10;
+            keyword = keyword?.Trim();
+            page = Math.Max(page, 1);
+            var query = _context.Students.AsNoTracking().AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(x => x.Code.Contains(keyword)
+                    || x.FullName.Contains(keyword)
+                    || x.Email.Contains(keyword)
+                    || x.Phone.Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Min(page, totalPages);
+            ViewBag.Keyword = keyword;
+            ViewBag.Page = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            return View(await query.OrderBy(x => x.Code)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync());
         }
 
         // GET: Students/Details/5
@@ -208,6 +230,7 @@ namespace web_do_an1.Controllers
             model.Code = student.Code;
             ModelState.Clear();
             TryValidateModel(model);
+            await ValidateStudentAsync(model, studentId);
             if (!ModelState.IsValid)
             {
                 model.Id = student.Id;
@@ -253,6 +276,22 @@ namespace web_do_an1.Controllers
                     x.Id != currentId && x.Email == student.Email))
             {
                 ModelState.AddModelError(nameof(Student.Email), "Email đã được sử dụng.");
+            }
+            else if (await _context.UserAccounts.AnyAsync(x =>
+                         x.StudentId != currentId && x.Email == student.Email))
+            {
+                ModelState.AddModelError(nameof(Student.Email), "Email đã được sử dụng bởi tài khoản khác.");
+            }
+
+            if (await _context.Students.AnyAsync(x =>
+                    x.Id != currentId && x.Phone == student.Phone))
+            {
+                ModelState.AddModelError(nameof(Student.Phone), "Số điện thoại đã được sử dụng.");
+            }
+            else if (await _context.UserAccounts.AnyAsync(x =>
+                         x.StudentId != currentId && x.Phone == student.Phone))
+            {
+                ModelState.AddModelError(nameof(Student.Phone), "Số điện thoại đã được sử dụng bởi tài khoản khác.");
             }
         }
 

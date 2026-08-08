@@ -1,11 +1,14 @@
 @model UserAccount
 @{
     ViewData["Title"] = "Tạo tài khoản";
+    var roles = ViewBag.Roles as IEnumerable<Role> ?? [];
+    var students = ViewBag.StudentIdItems as IEnumerable<Student> ?? [];
+    var teachers = ViewBag.TeacherIdItems as IEnumerable<Teacher> ?? [];
 }
 
 <div class="page-head"><h1>Tạo tài khoản</h1></div>
 <div class="form-card form-wide">
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" autocomplete="off">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <div class="row g-3">
             <div class="col-md-6">
@@ -20,12 +23,26 @@
             </div>
             <div class="col-md-6">
                 <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
+                <input asp-for="Password" class="form-control" autocomplete="new-password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="col-md-6">
                 <label asp-for="RoleId" class="form-label"></label>
-                <select asp-for="RoleId" class="form-select" asp-items="ViewBag.RoleId"></select>
+                <select asp-for="RoleId" class="form-select" id="RoleId">
+                    <option value="">-- Chọn vai trò --</option>
+                    @foreach (var role in roles)
+                    {
+                        if (Model.RoleId == role.Id)
+                        {
+                            <option value="@role.Id" data-role="@role.Name" selected>@role.DisplayName</option>
+                        }
+                        else
+                        {
+                            <option value="@role.Id" data-role="@role.Name">@role.DisplayName</option>
+                        }
+                    }
+                </select>
+                <div class="form-text">Học viên liên kết hồ sơ học viên; giáo viên liên kết hồ sơ giáo viên.</div>
             </div>
             <div class="col-md-6">
                 <label asp-for="Email" class="form-label"></label>
@@ -37,17 +54,41 @@
                 <input asp-for="Phone" class="form-control" />
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
-            <div class="col-md-6">
-                <label asp-for="StudentId" class="form-label"></label>
-                <select asp-for="StudentId" class="form-select" asp-items="ViewBag.StudentId">
+            <div class="col-md-6 account-link-field" data-link-role="Student">
+                <label asp-for="StudentId" class="form-label">Hồ sơ học viên liên kết</label>
+                <select asp-for="StudentId" class="form-select">
                     <option value="">Không liên kết</option>
+                    @foreach (var student in students)
+                    {
+                        if (Model.StudentId == student.Id)
+                        {
+                            <option value="@student.Id" selected>@student.FullName (@student.Code)</option>
+                        }
+                        else
+                        {
+                            <option value="@student.Id">@student.FullName (@student.Code)</option>
+                        }
+                    }
                 </select>
+                <div class="form-text">Chỉ dùng khi vai trò là Học viên.</div>
             </div>
-            <div class="col-md-6">
-                <label asp-for="TeacherId" class="form-label"></label>
-                <select asp-for="TeacherId" class="form-select" asp-items="ViewBag.TeacherId">
+            <div class="col-md-6 account-link-field" data-link-role="Teacher">
+                <label asp-for="TeacherId" class="form-label">Hồ sơ giáo viên liên kết</label>
+                <select asp-for="TeacherId" class="form-select">
                     <option value="">Không liên kết</option>
+                    @foreach (var teacher in teachers)
+                    {
+                        if (Model.TeacherId == teacher.Id)
+                        {
+                            <option value="@teacher.Id" selected>@teacher.FullName (@teacher.Code)</option>
+                        }
+                        else
+                        {
+                            <option value="@teacher.Id">@teacher.FullName (@teacher.Code)</option>
+                        }
+                    }
                 </select>
+                <div class="form-text">Chỉ dùng khi vai trò là Giáo viên.</div>
             </div>
             <div class="col-12 form-check ms-2">
                 <input asp-for="IsActive" class="form-check-input" />
@@ -60,3 +101,26 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const roleSelect = document.getElementById('RoleId');
+            const linkFields = [...document.querySelectorAll('[data-link-role]')];
+            if (!roleSelect) return;
+
+            const updateLinkFields = () => {
+                const role = roleSelect.selectedOptions[0]?.dataset.role || '';
+                linkFields.forEach(field => {
+                    const isRelevant = field.dataset.linkRole === role;
+                    field.hidden = !isRelevant;
+                    const select = field.querySelector('select');
+                    if (select) select.disabled = !isRelevant;
+                });
+            };
+
+            roleSelect.addEventListener('change', updateLinkFields);
+            updateLinkFields();
+        })();
+    </script>
+}

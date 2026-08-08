@@ -3,18 +3,60 @@
 @{
     ViewData["Title"] = "Lịch khai giảng";
     var isTeacherSchedule = ViewBag.IsTeacherSchedule is true;
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalItems = ViewBag.TotalItems is int total ? total : Model.Count();
 }
 <section class="page-heading"><div><p class="section-kicker">Lịch đào tạo</p><h1>Lịch khai giảng</h1><p>@(isTeacherSchedule ? "Các lớp khai giảng do bạn phụ trách." : "Tìm lớp học phù hợp theo khóa học, hình thức và thời gian.")</p></div></section>
 <section class="content-card">
     <form method="get" class="filter-bar">
         <label>Tìm lớp hoặc khóa học<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tên khóa học, mã lớp..." /></label>
         <label>Hình thức<select class="form-select" name="mode"><option value="">Tất cả</option><option value="Offline" selected="@(ViewBag.Mode == "Offline")">Tại trung tâm</option><option value="Online" selected="@(ViewBag.Mode == "Online")">Trực tuyến</option></select></label>
+        <label>Ngày khai giảng<input class="form-control" type="date" name="startDate" value="@ViewBag.StartDate" /></label>
         <button class="btn btn-primary">Tìm kiếm</button>
     </form>
-    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Lớp</th><th>Khóa học</th><th>Giáo viên</th><th>Lịch học</th><th>Phòng</th><th>Khai giảng</th><th></th></tr></thead><tbody>
+    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Lớp</th><th>Khóa học</th><th>Giáo viên</th><th>Lịch học</th><th>Phòng</th><th>Khai giảng</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+    @if (!Model.Any())
+    {
+        <tr><td colspan="8" class="empty-table-message">Không tìm thấy lịch khai giảng phù hợp.</td></tr>
+    }
+    else
+    {
     @foreach(var item in Model)
     {
-        <tr><td><strong>@item.Code</strong></td><td>@item.Course.Name</td><td>@item.Teacher.FullName</td><td>@item.Schedule</td><td>@item.Room</td><td>@item.StartDate.ToString("dd/MM/yyyy")</td><td><a class="btn btn-sm btn-outline-primary" asp-controller="Courses" asp-action="Details" asp-route-id="@item.CourseId">Chi tiết</a></td></tr>
+        <tr><td><strong>@item.Code</strong></td><td>@item.Course.Name</td><td>@item.Teacher.FullName</td><td>@item.Schedule</td><td>@item.Room</td><td>@item.StartDate.ToString("dd/MM/yyyy")</td><td><span class="status-pill status-class status-class-@(item.EffectiveStatus.ToString().ToLowerInvariant())">@DisplayStatus(item.EffectiveStatus)</span></td><td><a class="btn btn-sm btn-outline-primary" asp-controller="Courses" asp-action="Details" asp-route-id="@item.CourseId">Chi tiết</a></td></tr>
+    }
     }
     </tbody></table></div>
+    @if (totalPages > 1)
+    {
+        <nav class="pager-bar" aria-label="Phân trang lịch khai giảng">
+            <span>Trang @currentPage/@totalPages · @totalItems lớp</span>
+            <div>
+                <a class="pager-number @(currentPage == 1 ? "disabled" : "")" asp-action="Schedule" asp-route-keyword="@ViewBag.Keyword" asp-route-mode="@ViewBag.Mode" asp-route-startDate="@ViewBag.StartDate" asp-route-page="@(currentPage - 1)">&lt;</a>
+                @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
+                {
+                    if (number == PaginationHelper.Ellipsis)
+                    {
+                        <span class="pager-number disabled">...</span>
+                    }
+                    else
+                    {
+                        <a class="pager-number @(number == currentPage ? "active" : "")" asp-action="Schedule" asp-route-keyword="@ViewBag.Keyword" asp-route-mode="@ViewBag.Mode" asp-route-startDate="@ViewBag.StartDate" asp-route-page="@number">@number</a>
+                    }
+                }
+                <a class="pager-number @(currentPage == totalPages ? "disabled" : "")" asp-action="Schedule" asp-route-keyword="@ViewBag.Keyword" asp-route-mode="@ViewBag.Mode" asp-route-startDate="@ViewBag.StartDate" asp-route-page="@(currentPage + 1)">&gt;</a>
+            </div>
+        </nav>
+    }
 </section>
+
+@functions {
+    private static string DisplayStatus(CourseClassStatus status) => status switch
+    {
+        CourseClassStatus.Upcoming => "Sắp khai giảng",
+        CourseClassStatus.Open => "Đang mở",
+        CourseClassStatus.Locked => "Đã khóa lớp",
+        _ => "Đã đóng"
+    };
+}

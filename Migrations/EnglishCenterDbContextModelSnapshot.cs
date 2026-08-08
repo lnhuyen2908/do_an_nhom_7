@@ -126,6 +126,9 @@ namespace web_do_an1.Migrations
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Room")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -139,6 +142,11 @@ namespace web_do_an1.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<int>("TeacherId")
                         .HasColumnType("int");
 
@@ -148,6 +156,8 @@ namespace web_do_an1.Migrations
                         .IsUnique();
 
                     b.HasIndex("CourseId");
+
+                    b.HasIndex("StartDate");
 
                     b.HasIndex("TeacherId");
 
@@ -185,6 +195,11 @@ namespace web_do_an1.Migrations
 
                     b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("YouTubeUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -231,6 +246,45 @@ namespace web_do_an1.Migrations
                         .HasFilter("[Status] <> 'Cancelled'");
 
                     b.ToTable("Enrollments");
+                });
+
+            modelBuilder.Entity("web_do_an1.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(800)
+                        .HasColumnType("nvarchar(800)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UserAccountId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserAccountId", "IsRead", "CreatedAt");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("web_do_an1.Models.Payment", b =>
@@ -290,6 +344,14 @@ namespace web_do_an1.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Note")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -310,6 +372,11 @@ namespace web_do_an1.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
@@ -466,10 +533,20 @@ namespace web_do_an1.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Certifications")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Degree")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -650,6 +727,17 @@ namespace web_do_an1.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("web_do_an1.Models.Notification", b =>
+                {
+                    b.HasOne("web_do_an1.Models.UserAccount", "UserAccount")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserAccount");
+                });
+
             modelBuilder.Entity("web_do_an1.Models.Payment", b =>
                 {
                     b.HasOne("web_do_an1.Models.Enrollment", "Enrollment")
@@ -810,6 +898,11 @@ namespace web_do_an1.Migrations
                     b.Navigation("CourseLectures");
 
                     b.Navigation("UserAccount");
+                });
+
+            modelBuilder.Entity("web_do_an1.Models.UserAccount", b =>
+                {
+                    b.Navigation("Notifications");
                 });
 #pragma warning restore 612, 618
         }

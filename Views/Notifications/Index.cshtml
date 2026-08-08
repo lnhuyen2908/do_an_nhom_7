@@ -1,0 +1,39 @@
+@model IEnumerable<Notification>
+@{
+    ViewData["Title"] = "Thông báo";
+}
+
+<section class="page-heading">
+    <div>
+        <p class="section-kicker">Hệ thống</p>
+        <h1>Thông báo</h1>
+        <p>Cập nhật từ Admin, nhân viên đào tạo và giảng viên.</p>
+    </div>
+    <form asp-action="MarkAllRead" method="post">
+        <button class="btn btn-outline-primary">Đánh dấu đã đọc</button>
+    </form>
+</section>
+
+<section class="notification-list">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">Bạn chưa có thông báo nào.</div>
+    }
+    else
+    {
+        @foreach (var item in Model)
+        {
+            <article class="notification-card @(item.IsRead ? "" : "is-unread")">
+                <div>
+                    <span>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    <h2>@item.Title</h2>
+                    <p>@item.Message</p>
+                </div>
+                <form asp-action="MarkRead" method="post">
+                    <input type="hidden" name="id" value="@item.Id" />
+                    <button class="btn btn-sm btn-outline-primary">Mở</button>
+                </form>
+            </article>
+        }
+    }
+</section>

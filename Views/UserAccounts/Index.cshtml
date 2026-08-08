@@ -1,6 +1,9 @@
 ﻿@model IEnumerable<UserAccount>
 @{
     ViewData["Title"] = "Tài khoản";
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalItems = ViewBag.TotalItems is int total ? total : Model.Count();
 }
 
 <div class="page-head">
@@ -8,10 +11,14 @@
         <p class="eyebrow">Hệ thống</p>
         <h1>Tài khoản người dùng</h1>
     </div>
-    <a class="btn btn-primary" asp-action="Create">Tạo tài khoản</a>
+    @* <a class="btn btn-primary" asp-action="Create">Tạo tài khoản</a> *@
 </div>
 
 <div class="table-card">
+    <form method="get" class="filter-bar">
+        <label>Tìm tài khoản<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tên đăng nhập, họ tên, email, số điện thoại" /></label>
+        <button class="btn btn-primary">Tìm kiếm</button>
+    </form>
     <table class="table">
         <thead>
             <tr>
@@ -25,6 +32,12 @@
             </tr>
         </thead>
         <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="7" class="empty-table-message">Không tìm thấy tài khoản phù hợp.</td></tr>
+        }
+        else
+        {
         @foreach (var item in Model)
         {
             <tr>
@@ -41,6 +54,28 @@
                 </td>
             </tr>
         }
+        }
         </tbody>
     </table>
 </div>
+@if (totalPages > 1)
+{
+    <nav class="pager-bar" aria-label="Phân trang tài khoản">
+        <span>Trang @currentPage/@totalPages · @totalItems tài khoản</span>
+        <div>
+            <a class="pager-number @(currentPage == 1 ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@(currentPage - 1)">&lt;</a>
+            @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
+            {
+                if (number == PaginationHelper.Ellipsis)
+                {
+                    <span class="pager-number disabled">...</span>
+                }
+                else
+                {
+                    <a class="pager-number @(number == currentPage ? "active" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@number">@number</a>
+                }
+            }
+            <a class="pager-number @(currentPage == totalPages ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@(currentPage + 1)">&gt;</a>
+        </div>
+    </nav>
+}

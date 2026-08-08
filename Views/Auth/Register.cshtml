@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Đăng ký tài khoản";
+    // Giới hạn ngày sinh để học viên có độ tuổi từ 5 đến 100 ngay trên trình duyệt.
     var minBirthDate = DateTime.Today.AddYears(-100).ToString("yyyy-MM-dd");
     var maxBirthDate = DateTime.Today.AddYears(-5).ToString("yyyy-MM-dd");
 }
@@ -13,6 +14,7 @@
     </div>
 
     <div class="auth-form-panel">
+        @* Form gửi POST đến hàm AuthController.Register có cùng tên với asp-action. *@
         <form class="auth-form auth-register-form" asp-action="Register" method="post">
             <div class="auth-heading">
                 <span class="eyebrow">Bắt đầu học ngay</span>
@@ -27,6 +29,7 @@
             <div class="auth-fields-grid">
                 <div class="auth-field auth-field-full">
                     <label class="form-label" for="register-full-name">Họ và tên</label>
+                    @* name="fullName" phải trùng tên tham số fullName trong AuthController.Register. *@
                     <input class="form-control" id="register-full-name" name="fullName"
                            value="@ViewBag.FullName" autocomplete="name" required />
                 </div>
@@ -75,6 +78,7 @@
                 </div>
             </div>
 
+            @* type="submit" gửi các input có thuộc tính name lên Controller. *@
             <button class="btn btn-primary btn-auth-submit" type="submit">Tạo tài khoản</button>
             <div class="auth-switch">
                 <span>Đã có tài khoản?</span>

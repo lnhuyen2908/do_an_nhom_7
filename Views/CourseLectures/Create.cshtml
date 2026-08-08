@@ -27,8 +27,13 @@
             </div>
             <div class="form-group">
                 <label class="control-label" for="lectureFile">Tệp bài giảng</label>
-                <input id="lectureFile" name="lectureFile" type="file" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" required />
+                <input id="lectureFile" name="lectureFile" type="file" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" />
                 @Html.ValidationMessage("lectureFile", null, new { @class = "text-danger" })
+            </div>
+            <div class="form-group">
+                <label asp-for="YouTubeUrl" class="control-label"></label>
+                <input asp-for="YouTubeUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                <span asp-validation-for="YouTubeUrl" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Lưu" class="btn btn-primary" />

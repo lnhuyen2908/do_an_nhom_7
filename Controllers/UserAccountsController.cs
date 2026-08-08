@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,16 +18,39 @@ public class UserAccountsController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? keyword, int page = 1)
     {
+        const int pageSize = 10;
+        keyword = keyword?.Trim();
+        page = Math.Max(page, 1);
         var accounts = _context.UserAccounts
             .AsNoTracking()
             .Include(x => x.Role)
             .Include(x => x.Student)
             .Include(x => x.Teacher)
-            .OrderBy(x => x.UserName);
+            .AsQueryable();
 
-        return View(await accounts.ToListAsync());
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            accounts = accounts.Where(x => x.UserName.Contains(keyword)
+                || x.FullName.Contains(keyword)
+                || x.Email.Contains(keyword)
+                || x.Phone.Contains(keyword)
+                || x.Role.DisplayName.Contains(keyword));
+        }
+
+        var totalItems = await accounts.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        page = Math.Min(page, totalPages);
+        ViewBag.Keyword = keyword;
+        ViewBag.Page = page;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.TotalItems = totalItems;
+
+        return View(await accounts.OrderBy(x => x.UserName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync());
     }
 
     public async Task<IActionResult> Details(int? id)
@@ -59,6 +82,7 @@ public class UserAccountsController : Controller
         [Bind("FullName,UserName,Password,Email,Phone,RoleId,StudentId,TeacherId,IsActive")]
         UserAccount account)
     {
+        account ??= new UserAccount();
         NormalizeAccount(account);
         ModelState.Clear();
         TryValidateModel(account);
@@ -73,10 +97,19 @@ public class UserAccountsController : Controller
         if (ModelState.IsValid)
         {
             account.CreatedAt = DateTime.Now;
-            _context.UserAccounts.Add(account);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Đã tạo tài khoản.";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _context.UserAccounts.Add(account);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Đã tạo tài khoản.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException)
+            {
+                // Vẫn có thể xảy ra xung đột nếu một tài khoản được tạo đồng thời ở phiên khác.
+                ModelState.AddModelError(string.Empty,
+                    "Không thể tạo tài khoản. Tên đăng nhập hoặc hồ sơ liên kết có thể vừa được sử dụng.");
+            }
         }
 
         await SetSelectListsAsync(account);
@@ -204,18 +237,30 @@ public class UserAccountsController : Controller
 
     private async Task SetSelectListsAsync(UserAccount? account = null)
     {
+        var roles = await _context.Roles.AsNoTracking()
+            .OrderBy(x => x.DisplayName)
+            .ToListAsync();
+        ViewBag.Roles = roles;
         ViewData["RoleId"] = new SelectList(
-            await _context.Roles.AsNoTracking().OrderBy(x => x.DisplayName).ToListAsync(),
+            roles,
             "Id",
             "DisplayName",
             account?.RoleId);
+        var students = await _context.Students.AsNoTracking()
+            .OrderBy(x => x.FullName)
+            .ToListAsync();
+        ViewBag.StudentIdItems = students;
         ViewData["StudentId"] = new SelectList(
-            await _context.Students.AsNoTracking().OrderBy(x => x.FullName).ToListAsync(),
+            students,
             "Id",
             "FullName",
             account?.StudentId);
+        var teachers = await _context.Teachers.AsNoTracking()
+            .OrderBy(x => x.FullName)
+            .ToListAsync();
+        ViewBag.TeacherIdItems = teachers;
         ViewData["TeacherId"] = new SelectList(
-            await _context.Teachers.AsNoTracking().OrderBy(x => x.FullName).ToListAsync(),
+            teachers,
             "Id",
             "FullName",
             account?.TeacherId);
@@ -223,11 +268,11 @@ public class UserAccountsController : Controller
 
     private static void NormalizeAccount(UserAccount account)
     {
-        account.FullName = account.FullName.Trim();
-        account.UserName = account.UserName.Trim().ToLowerInvariant();
-        account.Password = account.Password.Trim();
-        account.Email = account.Email.Trim();
-        account.Phone = account.Phone.Trim();
+        account.FullName = account.FullName?.Trim() ?? string.Empty;
+        account.UserName = account.UserName?.Trim().ToLowerInvariant() ?? string.Empty;
+        account.Password = account.Password?.Trim() ?? string.Empty;
+        account.Email = account.Email?.Trim().ToLowerInvariant() ?? string.Empty;
+        account.Phone = account.Phone?.Trim() ?? string.Empty;
     }
 
     private async Task ValidateAccountAsync(UserAccount account, int? currentId = null)
@@ -236,6 +281,20 @@ public class UserAccountsController : Controller
                 x.Id != currentId && x.UserName == account.UserName))
         {
             ModelState.AddModelError(nameof(UserAccount.UserName), "Tên đăng nhập đã tồn tại.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(account.Email)
+            && await _context.UserAccounts.AnyAsync(x =>
+                x.Id != currentId && x.Email == account.Email))
+        {
+            ModelState.AddModelError(nameof(UserAccount.Email), "Email đã được sử dụng.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(account.Phone)
+            && await _context.UserAccounts.AnyAsync(x =>
+                x.Id != currentId && x.Phone == account.Phone))
+        {
+            ModelState.AddModelError(nameof(UserAccount.Phone), "Số điện thoại đã được sử dụng.");
         }
 
         var role = await _context.Roles.AsNoTracking()

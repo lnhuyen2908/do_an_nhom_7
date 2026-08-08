@@ -1,0 +1,57 @@
+@model IEnumerable<AttendanceRecord>
+@{
+    ViewData["Title"] = "Điểm danh của tôi";
+    var presentCount = ViewBag.PresentCount is int present ? present : 0;
+    var absentCount = ViewBag.AbsentCount is int absent ? absent : 0;
+    var classes = ViewBag.Classes as IEnumerable<Enrollment> ?? [];
+    var selectedClassId = ViewBag.SelectedClassId is int selected ? selected : 0;
+}
+
+<section class="page-heading">
+    <div>
+        <p class="section-kicker">Học viên</p>
+        <h1>Điểm danh của tôi</h1>
+        <p>Theo dõi lịch sử tham gia học theo từng buổi.</p>
+    </div>
+</section>
+
+<section class="content-card">
+    <form method="get" class="filter-bar">
+        <label>Lớp học<select class="form-select" name="classId">@foreach (var item in classes){<option value="@item.CourseClassId" selected="@(selectedClassId == item.CourseClassId)">@item.CourseClass!.Code · @item.Course.Name</option>}</select></label>
+        <label>Từ ngày<input class="form-control" type="date" name="fromDate" value="@ViewBag.FromDate" /></label>
+        <label>Đến ngày<input class="form-control" type="date" name="toDate" value="@ViewBag.ToDate" /></label>
+        <button class="btn btn-primary">Lọc</button>
+    </form>
+    <div class="stats-grid compact">
+        <article class="stat-card"><span>Đã đi học</span><strong>@presentCount</strong></article>
+        <article class="stat-card"><span>Đã nghỉ</span><strong>@absentCount</strong></article>
+    </div>
+    @if (ViewBag.NotStartedMessage is string message)
+    {
+        <div class="empty-state">@message</div>
+    }
+    else
+    {
+        @if (!Model.Any())
+        {
+            <div class="empty-state">Chưa có bản ghi điểm danh cho lớp này trong khoảng thời gian đã chọn.</div>
+        }
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Ngày học</th><th>Khóa học</th><th>Lớp</th><th>Trạng thái</th><th>Ghi chú</th></tr></thead>
+                <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.StudyDate.ToString("dd/MM/yyyy")</td>
+                        <td>@item.CourseClass.Course.Name</td>
+                        <td>@item.CourseClass.Code</td>
+                        <td><span class="status-pill @(item.IsPresent ? "status-paid" : "status-unpaid")">@(item.IsPresent ? "Có mặt" : "Vắng")</span></td>
+                        <td>@(string.IsNullOrWhiteSpace(item.Note) ? "-" : item.Note)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

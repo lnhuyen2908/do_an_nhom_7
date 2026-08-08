@@ -1,7 +1,10 @@
-﻿@model IEnumerable<web_do_an1.Models.CourseLecture>
+@model IEnumerable<web_do_an1.Models.CourseLecture>
 
 @{
     ViewData["Title"] = "Danh sách";
+    var currentPage = ViewBag.Page is int page ? page : 1;
+    var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
+    var totalItems = ViewBag.TotalItems is int total ? total : Model.Count();
 }
 
 <h1>Danh sách</h1>
@@ -9,9 +12,19 @@
 <p>
     <a class="btn btn-primary" asp-action="Create">Thêm mới</a>
 </p>
+<form method="get" class="content-card filter-bar">
+    <label>Tìm bài giảng<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tiêu đề, khóa học, giáo viên, YouTube" /></label>
+    <button class="btn btn-primary">Tìm kiếm</button>
+</form>
 <table class="table">
     <thead>
         <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Teacher)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Course)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Title)
             </th>
@@ -21,32 +34,39 @@
             <th>
                 @Html.DisplayNameFor(model => model.UploadedAt)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Course)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Teacher)
-            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
+@if (!Model.Any())
+{
+        <tr><td colspan="6" class="empty-table-message">Không tìm thấy bài giảng phù hợp.</td></tr>
+}
+else
+{
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                <a href="@item.FileUrl" target="_blank" rel="noopener">@item.FileName</a>
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UploadedAt)
+                @Html.DisplayFor(modelItem => item.Teacher.FullName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Course.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Teacher.FullName)
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @if (!string.IsNullOrWhiteSpace(item.FileUrl))
+                {
+                    <a href="@item.FileUrl" target="_blank" rel="noopener">@item.FileName</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(item.YouTubeUrl))
+                {
+                    <a class="d-block" href="@item.YouTubeUrl" target="_blank" rel="noopener">YouTube</a>
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UploadedAt)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
@@ -55,5 +75,27 @@
             </td>
         </tr>
 }
+}
     </tbody>
 </table>
+@if (totalPages > 1)
+{
+    <nav class="pager-bar">
+        <span>Trang @currentPage/@totalPages · @totalItems bài giảng</span>
+        <div>
+            <a class="pager-number @(currentPage == 1 ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@(currentPage - 1)">&lt;</a>
+            @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
+            {
+                if (number == PaginationHelper.Ellipsis)
+                {
+                    <span class="pager-number disabled">...</span>
+                }
+                else
+                {
+                    <a class="pager-number @(number == currentPage ? "active" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@number">@number</a>
+                }
+            }
+            <a class="pager-number @(currentPage == totalPages ? "disabled" : "")" asp-action="Index" asp-route-keyword="@ViewBag.Keyword" asp-route-page="@(currentPage + 1)">&gt;</a>
+        </div>
+    </nav>
+}

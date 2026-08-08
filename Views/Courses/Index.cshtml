@@ -1,10 +1,30 @@
 ﻿@model IEnumerable<Course>
 @{
     ViewData["Title"] = "Danh sách khóa học";
+    // Model của trang là danh sách Course do CoursesController.Index gửi sang.
+    // Kiểm tra quyền để dùng chung trang này cho giao diện quản lý và giao diện học viên.
     var canManage = User.IsInRole("Admin") || User.IsInRole("Staff");
+    // Đọc thông tin phân trang từ ViewBag mà CoursesController.Index đã chuẩn bị.
     var currentPage = ViewBag.Page is int page ? page : 1;
     var totalPages = ViewBag.TotalPages is int pages ? pages : 1;
     var totalCourses = ViewBag.TotalCourses is int total ? total : Model.Count();
+    var queryKeyword = Context.Request.Query.TryGetValue("keyword", out var keywordValues)
+        ? keywordValues.ToString()
+        : null;
+    var searchMessage = ViewBag.SearchMessage as string;
+    var hasInvalidKeyword = queryKeyword is not null
+        && (string.IsNullOrWhiteSpace(queryKeyword) || queryKeyword.All(x => x == '+'));
+    if (!canManage && hasInvalidKeyword)
+    {
+        searchMessage = "Vui lòng nhập từ khóa hợp lệ.";
+    }
+    else if (!canManage
+        && string.IsNullOrWhiteSpace(searchMessage)
+        && !string.IsNullOrWhiteSpace(queryKeyword)
+        && !Model.Any())
+    {
+        searchMessage = "Không tìm thấy khóa học phù hợp.";
+    }
 }
 
 @if (canManage)
@@ -13,6 +33,12 @@
     <p>
         <a class="btn btn-primary" asp-action="Create">Thêm mới</a>
     </p>
+    <form method="get" class="content-card filter-bar">
+        <label>Tìm khóa học<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tên hoặc mã khóa học" /></label>
+        <label>Trình độ<select class="form-select" name="level"><option value="">Tất cả trình độ</option>@foreach (var item in (IEnumerable<string>)(ViewBag.Levels ?? new List<string>())){<option value="@item" selected="@(ViewBag.Level == item)">@item</option>}</select></label>
+        <label>Ngày khai giảng<input class="form-control" type="date" name="startDate" value="@ViewBag.StartDate" /></label>
+        <button class="btn btn-primary">Tìm kiếm</button>
+    </form>
     <table class="table">
         <thead>
             <tr>
@@ -26,6 +52,12 @@
             </tr>
         </thead>
         <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="7" class="empty-table-message">Không tìm thấy khóa học phù hợp.</td></tr>
+        }
+        else
+        {
         @foreach (var item in Model)
         {
             <tr>
@@ -42,6 +74,7 @@
                 </td>
             </tr>
         }
+        }
         </tbody>
     </table>
     @if (totalPages > 1)
@@ -53,20 +86,30 @@
                    asp-action="Index"
                    asp-route-keyword="@ViewBag.Keyword"
                    asp-route-level="@ViewBag.Level"
-                   asp-route-page="@(currentPage - 1)">Trước</a>
-                @for (var number = 1; number <= totalPages; number++)
+                   asp-route-startDate="@ViewBag.StartDate"
+                   asp-route-page="@(currentPage - 1)">&lt;</a>
+                @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
                 {
-                    <a class="pager-number @(number == currentPage ? "active" : "")"
-                       asp-action="Index"
-                       asp-route-keyword="@ViewBag.Keyword"
-                       asp-route-level="@ViewBag.Level"
-                       asp-route-page="@number">@number</a>
+                    if (number == PaginationHelper.Ellipsis)
+                    {
+                        <span class="pager-number disabled">...</span>
+                    }
+                    else
+                    {
+                        <a class="pager-number @(number == currentPage ? "active" : "")"
+                           asp-action="Index"
+                           asp-route-keyword="@ViewBag.Keyword"
+                           asp-route-level="@ViewBag.Level"
+                           asp-route-startDate="@ViewBag.StartDate"
+                           asp-route-page="@number">@number</a>
+                    }
                 }
                 <a class="pager-number @(currentPage == totalPages ? "disabled" : "")"
                    asp-action="Index"
                    asp-route-keyword="@ViewBag.Keyword"
                    asp-route-level="@ViewBag.Level"
-                   asp-route-page="@(currentPage + 1)">Sau</a>
+                   asp-route-startDate="@ViewBag.StartDate"
+                   asp-route-page="@(currentPage + 1)">&gt;</a>
             </div>
         </nav>
     }
@@ -79,12 +122,23 @@ else
             <h1>Khóa học phù hợp với mục tiêu của bạn</h1>
         </div>
     </div>
+    @* method="get" đưa keyword và level lên URL rồi gọi lại hàm CoursesController.Index. *@
     <form method="get" class="content-card filter-bar">
         <label>Tìm khóa học<input class="form-control" name="keyword" value="@ViewBag.Keyword" placeholder="Tên hoặc mã khóa học" /></label>
         <label>Trình độ<select class="form-select" name="level"><option value="">Tất cả trình độ</option>@foreach (var item in (IEnumerable<string>)(ViewBag.Levels ?? new List<string>())){<option value="@item" selected="@(ViewBag.Level == item)">@item</option>}</select></label>
+        <label>Ngày khai giảng<input class="form-control" type="date" name="startDate" value="@ViewBag.StartDate" /></label>
         <button class="btn btn-primary">Tìm kiếm</button>
     </form>
+    @if (!string.IsNullOrWhiteSpace(searchMessage))
+    {
+        <div class="empty-state">@searchMessage</div>
+    }
+    else if (!Model.Any())
+    {
+        <div class="empty-state">Không tìm thấy khóa học phù hợp.</div>
+    }
     <div class="course-grid">
+        @* Lặp qua danh sách khóa học và tạo một khối giao diện cho từng khóa. *@
         @foreach (var course in Model)
         {
             <article class="course-card">
@@ -98,6 +152,7 @@ else
                         <span>@course.Duration</span>
                         <strong>@course.Tuition.ToString("N0") VND</strong>
                     </div>
+                    @* asp-route-id truyền course.Id vào tham số id của hàm CoursesController.Details. *@
                     <a class="btn btn-sm btn-outline-primary"
                        asp-action="Details" asp-route-id="@course.Id">Chi tiết</a>
                 </div>
@@ -113,20 +168,30 @@ else
                    asp-action="Index"
                    asp-route-keyword="@ViewBag.Keyword"
                    asp-route-level="@ViewBag.Level"
-                   asp-route-page="@(currentPage - 1)">Trước</a>
-                @for (var number = 1; number <= totalPages; number++)
+                   asp-route-startDate="@ViewBag.StartDate"
+                   asp-route-page="@(currentPage - 1)">&lt;</a>
+                @foreach (var number in PaginationHelper.Build(currentPage, totalPages))
                 {
-                    <a class="pager-number @(number == currentPage ? "active" : "")"
-                       asp-action="Index"
-                       asp-route-keyword="@ViewBag.Keyword"
-                       asp-route-level="@ViewBag.Level"
-                       asp-route-page="@number">@number</a>
+                    if (number == PaginationHelper.Ellipsis)
+                    {
+                        <span class="pager-number disabled">...</span>
+                    }
+                    else
+                    {
+                        <a class="pager-number @(number == currentPage ? "active" : "")"
+                           asp-action="Index"
+                           asp-route-keyword="@ViewBag.Keyword"
+                           asp-route-level="@ViewBag.Level"
+                           asp-route-startDate="@ViewBag.StartDate"
+                           asp-route-page="@number">@number</a>
+                    }
                 }
                 <a class="pager-number @(currentPage == totalPages ? "disabled" : "")"
                    asp-action="Index"
                    asp-route-keyword="@ViewBag.Keyword"
                    asp-route-level="@ViewBag.Level"
-                   asp-route-page="@(currentPage + 1)">Sau</a>
+                   asp-route-startDate="@ViewBag.StartDate"
+                   asp-route-page="@(currentPage + 1)">&gt;</a>
             </div>
         </nav>
     }

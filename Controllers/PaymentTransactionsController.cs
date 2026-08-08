@@ -22,10 +22,34 @@ namespace web_do_an1.Controllers
         }
 
         // GET: PaymentTransactions
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? keyword, int page = 1)
         {
-            var englishCenterDbContext = _context.PaymentTransactions.Include(p => p.Payment).Include(p => p.Student);
-            return View(await englishCenterDbContext.ToListAsync());
+            const int pageSize = 10;
+            keyword = keyword?.Trim();
+            page = Math.Max(page, 1);
+            var query = _context.PaymentTransactions.AsNoTracking()
+                .Include(p => p.Payment)
+                .Include(p => p.Student)
+                .AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(x => x.Student.Code.Contains(keyword)
+                    || x.Student.FullName.Contains(keyword)
+                    || x.RecordedBy.Contains(keyword)
+                    || x.Note.Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Min(page, totalPages);
+            ViewBag.Keyword = keyword;
+            ViewBag.Page = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            return View(await query.OrderByDescending(x => x.PaidAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync());
         }
 
         // GET: PaymentTransactions/Details/5
@@ -119,7 +143,24 @@ namespace web_do_an1.Controllers
             {
                 try
                 {
-                    _context.Update(paymentTransaction);
+                    var existingTransaction = await _context.PaymentTransactions
+                        .FirstOrDefaultAsync(x => x.Id == id);
+                    if (existingTransaction is null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Status, ApprovedAt và ApprovedBy do quy trình duyệt quản lý.
+                    // Khi chỉnh sửa thông tin giao dịch, chỉ cập nhật các trường
+                    // trong form và giữ nguyên kết quả duyệt hiện tại.
+                    existingTransaction.PaymentId = paymentTransaction.PaymentId;
+                    existingTransaction.StudentId = paymentTransaction.StudentId;
+                    existingTransaction.Amount = paymentTransaction.Amount;
+                    existingTransaction.PaymentMethod = paymentTransaction.PaymentMethod;
+                    existingTransaction.PaidAt = paymentTransaction.PaidAt;
+                    existingTransaction.RecordedBy = paymentTransaction.RecordedBy;
+                    existingTransaction.Note = paymentTransaction.Note;
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

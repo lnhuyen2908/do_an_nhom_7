@@ -35,10 +35,36 @@ namespace web_do_an1.Controllers
         }
 
         // GET: CourseLectures
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? keyword, int page = 1)
         {
-            var englishCenterDbContext = _context.CourseLectures.Include(c => c.Course).Include(c => c.Teacher);
-            return View(await englishCenterDbContext.ToListAsync());
+            const int pageSize = 10;
+            keyword = keyword?.Trim();
+            page = Math.Max(page, 1);
+            var query = _context.CourseLectures.AsNoTracking()
+                .Include(c => c.Course)
+                .Include(c => c.Teacher)
+                .AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(x => x.Title.Contains(keyword)
+                    || x.Course.Code.Contains(keyword)
+                    || x.Course.Name.Contains(keyword)
+                    || x.Teacher.FullName.Contains(keyword)
+                    || x.FileName.Contains(keyword)
+                    || x.YouTubeUrl.Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Min(page, totalPages);
+            ViewBag.Keyword = keyword;
+            ViewBag.Page = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            return View(await query.OrderByDescending(x => x.UploadedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync());
         }
 
         // GET: CourseLectures/Details/5
@@ -74,24 +100,33 @@ namespace web_do_an1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int courseId, int teacherId, string? title, IFormFile? lectureFile)
+        public async Task<IActionResult> Create(int courseId, int teacherId, string? title, IFormFile? lectureFile, string? youTubeUrl)
         {
             var courseLecture = new CourseLecture
             {
                 CourseId = courseId,
                 TeacherId = teacherId,
                 Title = title?.Trim() ?? string.Empty,
+                YouTubeUrl = youTubeUrl?.Trim() ?? string.Empty,
                 UploadedAt = DateTime.Now
             };
 
             await ValidateLectureSelectionAsync(courseLecture.CourseId, courseLecture.TeacherId);
             ValidateLectureTitle(courseLecture.Title);
-            ValidateLectureFile(lectureFile, required: true);
+            ValidateLectureSource(lectureFile, courseLecture.YouTubeUrl, required: true);
 
             if (ModelState.IsValid)
             {
-                courseLecture.FileName = Path.GetFileName(lectureFile!.FileName).Trim();
-                courseLecture.FileUrl = await SaveLectureFileAsync(lectureFile, courseLecture.FileName);
+                if (lectureFile is { Length: > 0 })
+                {
+                    courseLecture.FileName = Path.GetFileName(lectureFile.FileName).Trim();
+                    courseLecture.FileUrl = await SaveLectureFileAsync(lectureFile, courseLecture.FileName);
+                }
+                else
+                {
+                    courseLecture.FileName = "YouTube";
+                    courseLecture.FileUrl = string.Empty;
+                }
                 _context.Add(courseLecture);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Đã thêm bài giảng.";
@@ -126,7 +161,7 @@ namespace web_do_an1.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            int id, int courseId, int teacherId, string? title, DateTime uploadedAt, IFormFile? lectureFile)
+            int id, int courseId, int teacherId, string? title, DateTime uploadedAt, IFormFile? lectureFile, string? youTubeUrl)
         {
             var courseLecture = await _context.CourseLectures.FindAsync(id);
             if (courseLecture is null)
@@ -137,11 +172,12 @@ namespace web_do_an1.Controllers
             courseLecture.CourseId = courseId;
             courseLecture.TeacherId = teacherId;
             courseLecture.Title = title?.Trim() ?? string.Empty;
+            courseLecture.YouTubeUrl = youTubeUrl?.Trim() ?? string.Empty;
             courseLecture.UploadedAt = uploadedAt == default ? courseLecture.UploadedAt : uploadedAt;
 
             await ValidateLectureSelectionAsync(courseLecture.CourseId, courseLecture.TeacherId);
             ValidateLectureTitle(courseLecture.Title);
-            ValidateLectureFile(lectureFile, required: false);
+            ValidateLectureSource(lectureFile, courseLecture.YouTubeUrl, required: string.IsNullOrWhiteSpace(courseLecture.FileUrl));
 
             if (ModelState.IsValid)
             {
@@ -237,7 +273,7 @@ namespace web_do_an1.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLecture(
-            int courseId, string? title, IFormFile? lectureFile)
+            int courseId, string? title, IFormFile? lectureFile, string? youTubeUrl)
         {
             if (!User.IsInRole("Teacher")
                 || !int.TryParse(User.FindFirstValue("TeacherId"), out var teacherId))
@@ -253,40 +289,63 @@ namespace web_do_an1.Controllers
             }
 
             title = title?.Trim() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(title) || lectureFile is null || lectureFile.Length == 0)
+            youTubeUrl = youTubeUrl?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(title)
+                || ((lectureFile is null || lectureFile.Length == 0) && string.IsNullOrWhiteSpace(youTubeUrl)))
             {
-                TempData["ErrorMessage"] = "Vui lòng nhập tiêu đề và chọn tệp bài giảng.";
+                TempData["ErrorMessage"] = "Vui lòng nhập tiêu đề và chọn tệp hoặc link YouTube.";
                 return RedirectToAction(nameof(MyLectures));
             }
 
-            var originalFileName = Path.GetFileName(lectureFile.FileName).Trim();
-            var extension = Path.GetExtension(originalFileName);
-            if (title.Length > 200 || originalFileName.Length > 255)
+            if (title.Length > 200)
             {
-                TempData["ErrorMessage"] = "Tiêu đề hoặc tên tệp quá dài. Vui lòng rút gọn trước khi tải lên.";
+                TempData["ErrorMessage"] = "Tiêu đề quá dài. Vui lòng rút gọn trước khi tải lên.";
                 return RedirectToAction(nameof(MyLectures));
             }
 
-            if (!AllowedLectureExtensions.Contains(extension))
+            if (!string.IsNullOrWhiteSpace(youTubeUrl)
+                && (!Uri.TryCreate(youTubeUrl, UriKind.Absolute, out var youtubeUri)
+                    || !IsYouTubeHost(youtubeUri.Host)))
             {
-                TempData["ErrorMessage"] = "Chỉ hỗ trợ các tệp PDF, Word, PowerPoint, Excel, TXT hoặc ZIP.";
+                TempData["ErrorMessage"] = "Link YouTube không hợp lệ.";
                 return RedirectToAction(nameof(MyLectures));
             }
 
-            if (lectureFile.Length > MaxLectureFileSize)
+            var originalFileName = string.Empty;
+            var fileUrl = string.Empty;
+            if (lectureFile is { Length: > 0 })
             {
-                TempData["ErrorMessage"] = "Tệp bài giảng không được vượt quá 20 MB.";
-                return RedirectToAction(nameof(MyLectures));
+                originalFileName = Path.GetFileName(lectureFile.FileName).Trim();
+                var extension = Path.GetExtension(originalFileName);
+                if (originalFileName.Length > 255)
+                {
+                    TempData["ErrorMessage"] = "Tên tệp quá dài. Vui lòng rút gọn trước khi tải lên.";
+                    return RedirectToAction(nameof(MyLectures));
+                }
+
+                if (!AllowedLectureExtensions.Contains(extension))
+                {
+                    TempData["ErrorMessage"] = "Chỉ hỗ trợ các tệp PDF, Word, PowerPoint, Excel, TXT hoặc ZIP.";
+                    return RedirectToAction(nameof(MyLectures));
+                }
+
+                if (lectureFile.Length > MaxLectureFileSize)
+                {
+                    TempData["ErrorMessage"] = "Tệp bài giảng không được vượt quá 20 MB.";
+                    return RedirectToAction(nameof(MyLectures));
+                }
+
+                fileUrl = await SaveLectureFileAsync(lectureFile, originalFileName);
             }
 
-            var fileUrl = await SaveLectureFileAsync(lectureFile, originalFileName);
             _context.CourseLectures.Add(new CourseLecture
             {
                 CourseId = courseId,
                 TeacherId = teacherId,
                 Title = title,
-                FileName = originalFileName,
+                FileName = string.IsNullOrWhiteSpace(originalFileName) ? "YouTube" : originalFileName,
                 FileUrl = fileUrl,
+                YouTubeUrl = youTubeUrl,
                 UploadedAt = DateTime.Now
             });
             await _context.SaveChangesAsync();
@@ -354,13 +413,19 @@ namespace web_do_an1.Controllers
             }
         }
 
-        private void ValidateLectureFile(IFormFile? lectureFile, bool required)
+        private void ValidateLectureSource(IFormFile? lectureFile, string youTubeUrl, bool required)
         {
             if (lectureFile is null || lectureFile.Length == 0)
             {
-                if (required)
+                if (required && string.IsNullOrWhiteSpace(youTubeUrl))
                 {
-                    ModelState.AddModelError("lectureFile", "Vui lòng chọn tệp bài giảng.");
+                    ModelState.AddModelError("lectureFile", "Vui lòng chọn tệp bài giảng hoặc nhập link YouTube.");
+                }
+                if (!string.IsNullOrWhiteSpace(youTubeUrl)
+                    && (!Uri.TryCreate(youTubeUrl, UriKind.Absolute, out var emptyFileYoutubeUri)
+                        || !IsYouTubeHost(emptyFileYoutubeUri.Host)))
+                {
+                    ModelState.AddModelError(nameof(CourseLecture.YouTubeUrl), "Link YouTube không hợp lệ.");
                 }
                 return;
             }
@@ -380,6 +445,13 @@ namespace web_do_an1.Controllers
             if (lectureFile.Length > MaxLectureFileSize)
             {
                 ModelState.AddModelError("lectureFile", "Tệp bài giảng không được vượt quá 20 MB.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(youTubeUrl)
+                && (!Uri.TryCreate(youTubeUrl, UriKind.Absolute, out var uri)
+                    || !IsYouTubeHost(uri.Host)))
+            {
+                ModelState.AddModelError(nameof(CourseLecture.YouTubeUrl), "Link YouTube không hợp lệ.");
             }
         }
 
@@ -429,6 +501,13 @@ namespace web_do_an1.Controllers
             }
 
             System.IO.File.Delete(filePath);
+        }
+
+        private static bool IsYouTubeHost(string host)
+        {
+            return host.Equals("youtube.com", StringComparison.OrdinalIgnoreCase)
+                || host.EndsWith(".youtube.com", StringComparison.OrdinalIgnoreCase)
+                || host.Equals("youtu.be", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

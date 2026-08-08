@@ -5,24 +5,97 @@
     var courseClass = (CourseClass)ViewBag.CourseClass;
     var scores = ViewBag.Scores as IEnumerable<Score> ?? [];
 }
-<section class="page-heading"><div><p class="section-kicker">@courseClass.Code</p><h1>Điểm và nhận xét · @courseClass.Course.Name</h1><p>Nhập điểm giữa kỳ, cuối kỳ và nhận xét kết quả học tập.</p></div><a class="btn btn-outline-secondary" asp-controller="CourseClasses" asp-action="MyClasses">Quay lại lớp dạy</a></section>
-<section class="content-card">
-    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Học viên</th><th style="min-width:520px">Kết quả học tập</th></tr></thead><tbody>
-    @foreach (var enrollment in Model)
-    {
-        var score = scores.FirstOrDefault(x => x.StudentId == enrollment.StudentId);
-        <tr>
-            <td><strong>@enrollment.Student.FullName</strong><small class="d-block text-muted">@enrollment.Student.Code</small></td>
-            <td>
-                <form asp-action="Save" method="post" class="score-entry-form">
-                    <input type="hidden" name="classId" value="@courseClass.Id" /><input type="hidden" name="studentId" value="@enrollment.StudentId" />
-                    <label>Giữa kỳ<input class="form-control form-control-sm" type="text" name="midtermScore" inputmode="decimal" placeholder="0.00" oninput="filterDecimal(this)" onkeydown="insertDecimalAtCaret(event,this)" onblur="formatScore(this)" value="@(score?.MidtermScore.ToString("0.00") ?? "0")" /></label>
-                    <label>Cuối kỳ<input class="form-control form-control-sm" type="text" name="finalScore" inputmode="decimal" placeholder="0.00" oninput="filterDecimal(this)" onkeydown="insertDecimalAtCaret(event,this)" onblur="formatScore(this)" value="@(score?.FinalScore.ToString("0.00") ?? "0")" /></label>
-                    <label class="comment-field">Nhận xét<input class="form-control form-control-sm" name="comment" maxlength="500" value="@score?.Comment" /></label>
-                    <button class="btn btn-sm btn-primary">Lưu</button>
-                </form>
-            </td>
-        </tr>
-    }
-    </tbody></table></div>
+<section class="page-heading">
+    <div>
+        <p class="section-kicker">@courseClass.Code</p>
+        <h1>Điểm và nhận xét · @courseClass.Course.Name</h1>
+        <p>Nhập điểm giữa kỳ, cuối kỳ và nhận xét kết quả học tập.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-controller="CourseClasses" asp-action="MyClasses">Quay lại lớp dạy</a>
 </section>
+
+<section class="content-card">
+    <div class="table-responsive">
+        <table class="table align-middle teacher-score-table">
+            <thead>
+                <tr>
+                    <th>Học viên</th>
+                    <th>Giữa kỳ</th>
+                    <th>Cuối kỳ</th>
+                    <th>Trung bình</th>
+                    <th>Kết quả</th>
+                    <th style="min-width: 480px">Nhập / cập nhật điểm</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var enrollment in Model)
+            {
+                var score = scores.FirstOrDefault(x => x.StudentId == enrollment.StudentId);
+                <tr>
+                    <td>
+                        <strong>@enrollment.Student.FullName</strong>
+                        <small class="d-block text-muted">@enrollment.Student.Code</small>
+                    </td>
+                    <td>@(score is null ? "—" : score.MidtermScore.ToString("0.0"))</td>
+                    <td>@(score is null ? "—" : score.FinalScore.ToString("0.0"))</td>
+                    <td>
+                        <strong class="score-average">@(score is null ? "—" : score.AverageScore.ToString("0.0"))</strong>
+                    </td>
+                    <td>
+                        @if (score is null)
+                        {
+                            <span class="text-muted">Chưa nhập</span>
+                        }
+                        else
+                        {
+                            <span class="result-badge @(score.AverageScore >= 5 ? "passed" : "failed")">@score.Result</span>
+                        }
+                    </td>
+                    <td>
+                        <form asp-action="Save" method="post" class="score-entry-form">
+                            <input type="hidden" name="classId" value="@courseClass.Id" />
+                            <input type="hidden" name="studentId" value="@enrollment.StudentId" />
+                            <label>Giữa kỳ
+                                <input class="form-control form-control-sm" type="text" name="midtermScore" inputmode="decimal" placeholder="0,00" oninput="filterDecimal(this)" onblur="formatScore(this)" value="@(score?.MidtermScore.ToString("0.00") ?? "0,00")" />
+                            </label>
+                            <label>Cuối kỳ
+                                <input class="form-control form-control-sm" type="text" name="finalScore" inputmode="decimal" placeholder="0,00" oninput="filterDecimal(this)" onblur="formatScore(this)" value="@(score?.FinalScore.ToString("0.00") ?? "0,00")" />
+                            </label>
+                            <label class="comment-field">Nhận xét
+                                <input class="form-control form-control-sm" name="comment" maxlength="500" value="@score?.Comment" />
+                            </label>
+                            <button class="btn btn-sm btn-primary" type="submit">Lưu</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function filterDecimal(input) {
+            let value = input.value.replace(/[^0-9.,]/g, '').replace('.', ',');
+            const parts = value.split(',');
+            value = parts[0].slice(0, 2);
+            if (parts.length > 1) {
+                value += ',' + parts.slice(1).join('').slice(0, 2);
+            }
+            input.value = value;
+        }
+
+        function formatScore(input) {
+            const score = Number.parseFloat(input.value.replace(',', '.'));
+            if (Number.isNaN(score)) {
+                input.value = '0,00';
+                return;
+            }
+
+            input.value = Math.min(10, Math.max(0, score))
+                .toFixed(2)
+                .replace('.', ',');
+        }
+    </script>
+}

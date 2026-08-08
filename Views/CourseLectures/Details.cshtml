@@ -20,7 +20,27 @@
             @Html.DisplayNameFor(model => model.FileName)
         </dt>
         <dd class = "col-sm-10">
-            <a href="@Model.FileUrl" target="_blank" rel="noopener">@Model.FileName</a>
+            @if (!string.IsNullOrWhiteSpace(Model.FileUrl))
+            {
+                <a href="@Model.FileUrl" target="_blank" rel="noopener">@Model.FileName</a>
+            }
+            else
+            {
+                <span>Chưa có tệp</span>
+            }
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.YouTubeUrl)
+        </dt>
+        <dd class = "col-sm-10">
+            @if (!string.IsNullOrWhiteSpace(Model.YouTubeUrl))
+            {
+                <a href="@Model.YouTubeUrl" target="_blank" rel="noopener">@Model.YouTubeUrl</a>
+            }
+            else
+            {
+                <span>Chưa gắn link</span>
+            }
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.UploadedAt)

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Payment>
+@model IEnumerable<Payment>
 @using web_do_an1.Models
 @{
     ViewData["Title"] = "Học phí của tôi";
@@ -9,8 +9,20 @@
 {
     var remaining = item.Amount - item.PaidAmount;
     var isPaid = item.PaidAmount >= item.Amount || item.Status == PaymentState.Paid;
-    var statusText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
-    var statusCss = isPaid ? "paid" : "unpaid";
+    var statusText = item.Status switch
+    {
+        PaymentState.PendingApproval => "Chờ duyệt",
+        PaymentState.PartiallyPaid => "Đã đóng một phần",
+        PaymentState.Paid => "Thành công",
+        _ => "Chưa thanh toán"
+    };
+    var statusCss = item.Status switch
+    {
+        PaymentState.PendingApproval => "pending",
+        PaymentState.PartiallyPaid => "partial",
+        PaymentState.Paid => "paid",
+        _ => "unpaid"
+    };
     <article class="record-card">
         <div class="section-title-row"><div><span class="badge text-bg-light">@item.Enrollment.Course.Code</span><h2>@item.Enrollment.Course.Name</h2></div><span class="status-pill status-@statusCss">@statusText</span></div>
         <div class="course-info-grid">
@@ -40,19 +52,40 @@
                     Thanh toán
                 </button>
             </form> *@
-            <form id="payForm-@item.Id" asp-action="Pay" method="post">
-                @Html.AntiForgeryToken()
-
+            @* <form asp-action="Pay" method="post" class="inline-management-form mt-3"> *@
+            @* <form id="payForm-@item.Id" asp-action="Pay" method="post">
                 <input type="hidden" name="id" value="@item.Id" />
-                <input type="hidden" name="amount" value="@remaining" />
-
-                <select class="form-select payment-method"
+                <input class="form-control" type="number" min="1" max="@remaining.ToString("0")" step="1" name="amount" value="@remaining.ToString("0")" /> *@
+                @* <select class="form-select" name="paymentMethod"><option value="BankTransfer">Chuyển khoản</option><option value="Card">Thẻ</option><option value="Cash">Tiền mặt</option></select>
+                <button class="btn btn-primary">Thanh toán</button> *@
+            @*     <select class="form-select payment-method"
                         name="paymentMethod"
                         data-id="@item.Id">
 
                     <option value="BankTransfer">Chuyển khoản</option>
                     <option value="Card">Thẻ</option>
                     <option value="Cash">Tiền mặt</option>
+
+                </select>
+
+                <button type="submit" class="btn btn-primary">
+                    Thanh toán
+                </button>
+            </form> *@
+            <form id="payForm-@item.Id" asp-action="Pay" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="id" value="@item.Id" />
+                <label class="form-label mt-3">Số tiền đóng trước</label>
+                <input class="form-control payment-amount" type="number" min="1" max="@remaining.ToString("0")" step="1" name="amount" value="@remaining.ToString("0")" />
+
+                <select class="form-select payment-method"
+                        name="paymentMethod"
+                        data-id="@item.Id">
+
+                    <option value="BankTransfer" selected="@(item.PaymentMethod == PaymentMethod.BankTransfer)">Chuyển khoản</option>
+                    <option value="Card" selected="@(item.PaymentMethod == PaymentMethod.Card)">Thẻ</option>
+                    <option value="Cash" selected="@(item.PaymentMethod == PaymentMethod.Cash)">Tiền mặt</option>
                 </select>
 
                 <button type="submit" class="btn btn-primary">
@@ -60,10 +93,16 @@
                 </button>
             </form>
         }
+        @if (isPaid)
+        {
+            <a class="btn btn-outline-primary mt-3" asp-controller="Reports" asp-action="InvoicePdf" asp-route-paymentId="@item.Id">
+                Xem hóa đơn
+            </a>
+        }
         @if (item.PaymentTransactions.Count > 0)
         {
             <details class="mt-3"><summary>Lịch sử giao dịch (@item.PaymentTransactions.Count)</summary>
-                <ul class="clean-list mt-2">@foreach (var transaction in item.PaymentTransactions.OrderByDescending(x => x.PaidAt)){ var methodText = transaction.PaymentMethod switch { PaymentMethod.Cash => "Tiền mặt", PaymentMethod.BankTransfer => "Chuyển khoản", _ => "Thẻ" }; <li>@transaction.PaidAt.ToString("dd/MM/yyyy HH:mm") · @transaction.Amount.ToString("N0") đ · @methodText</li>}</ul>
+                <ul class="clean-list mt-2">@foreach (var transaction in item.PaymentTransactions.OrderByDescending(x => x.PaidAt)){ var methodText = transaction.PaymentMethod switch { PaymentMethod.Cash => "Tiền mặt", PaymentMethod.BankTransfer => "Chuyển khoản", _ => "Thẻ" }; var txText = transaction.Status switch { PaymentTransactionState.Approved => "Thành công", PaymentTransactionState.Rejected => "Từ chối", _ => "Chờ duyệt" }; <li>@transaction.PaidAt.ToString("dd/MM/yyyy HH:mm") · @transaction.Amount.ToString("N0") đ · @methodText · @txText</li>}</ul>
             </details>
         }
     </article>
@@ -79,7 +118,7 @@
                 e.preventDefault();
 
                 var id = select.dataset.id;
-                var amount = select.dataset.amount;
+                var amount = select.closest("form").querySelector(".payment-amount").value;
 
                 window.location.href =
                     "/Payments/QR?id=" + id + "&amount=" + amount;
